@@ -1,0 +1,33 @@
+{
+  "name": "tokenauth",
+  "version": "1.0.0",
+  "description": "Simple express.js middleware to use a token for API authentication.",
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/tape/bin/tape test/*.js | faucet",
+    "lint": "eslint index.js lib/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luispablo/tokenauth.git"
+  },
+  "keywords": [
+    "express",
+    "middleware",
+    "auth",
+    "token"
+  ],
+  "author": "@luispablo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/luispablo/tokenauth/issues"
+  },
+  "homepage": "https://github.com/luispablo/tokenauth#readme",
+  "devDependencies": {
+    "tape": "^4.5.1"
+  },
+  "dependencies": {
+    "jwt-simple": "^0.5.0",
+    "moment": "^2.12.0"
+  }
+}
