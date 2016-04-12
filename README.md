@@ -20,18 +20,23 @@ const properties = {
 and then build the middleware:
 
 ```
-const TokenAuth = require("tokenauth");
-
-...
-
-const auth = TokenAuth(properties);
+const TokenAuth = require("tokenauth")(properties);
 ```
 
 and then just use it as an express JS middleware. For example, when adding routes:
 
 ```
-app.use("api/users", auth, require("routers/users"));
+app.use("api/users", TokenAuth.Middleware("api/users"), require("routers/users"));
 ```
+
+and to sign in a user do:
+
+```
+const token = TokenAuth.TokenBuilder(username, days);
+```
+
+where username is the username (dogh!), and days is the number of days you want
+this token to be valid. And then... use it as you like.
 
 # Operation
 This module will expect the header **x-access-token** for all requests, and the
