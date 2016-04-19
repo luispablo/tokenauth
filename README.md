@@ -38,6 +38,13 @@ const token = TokenAuth.TokenBuilder(username, days);
 where username is the username (dogh!), and days is the number of days you want
 this token to be valid. And then... use it as you like.
 
+# Router
+
+You also have a Router to add to your Express JS app. Do it like this:
+
+```
+```
+
 # Operation
 This module will expect the header **x-access-token** for all requests, and the
 header **x-access-app-id** for the static keys.
