@@ -43,11 +43,10 @@ this token to be valid. And then... use it as you like.
 You also have a Router to add to your Express JS app. Do it like this:
 
 ```
-const Router = require("../lib/Router");
 const authenticator = <an object with an authenticate(user, pass) method, handling es6 promises, like 'ws-credentials'>;
 const secret = "añkldjfañsdfa718749823u4h12jh4ñ123"; // to encode / decode the token
 const validDays = 7; // how many days you want to keep the tokens valid, no limit
-const routes = Router(authenticator, secret, validDays);
+const routes = TokenAuth.Router(authenticator, secret, validDays);
 ```
 
 and when you define the Express JS routes do something like:

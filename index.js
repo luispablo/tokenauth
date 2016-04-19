@@ -4,6 +4,7 @@ const AppCheck = require("./lib/AppCheck");
 const UserCheck = require("./lib/UserCheck");
 const Middleware = require("./lib/Middleware");
 const TokenBuilder = require("./lib/TokenBuilder");
+const Router = require("./lib/Router");
 
 module.exports = function (config) {
 	const validTokens = [];
@@ -12,6 +13,7 @@ module.exports = function (config) {
 
 	return {
 		Middleware: Middleware(appCheck, userCheck, config.excludedRoutes),
-		TokenBuilder: TokenBuilder(validTokens)
+		TokenBuilder: TokenBuilder(validTokens),
+		Router: Router
 	};
 };
