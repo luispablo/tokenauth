@@ -10,7 +10,7 @@ const DAYS = 7;
 const validTokens = [];
 const builder = TokenBuilder(validTokens, SECRET);
 
-test("TokenBuilder creates token", assert => {
+test("TokenBuilder - creates token", assert => {
 	const token = builder(USERNAME, DAYS);
 	const decoded = jwt.decode(token, SECRET);
 	const expires = moment().add(DAYS, "days").valueOf();
@@ -18,7 +18,7 @@ test("TokenBuilder creates token", assert => {
 	assert.end();
 });
 
-test("TokenBuilder stores created token", assert => {
+test("TokenBuilder - stores created token", assert => {
 	const previousLength = validTokens.length;
 	const token = builder(USERNAME, DAYS);
 	assert.equal(validTokens.length, previousLength + 1, "Has one more valid token");

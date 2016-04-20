@@ -46,7 +46,7 @@ You also have a Router to add to your Express JS app. Do it like this:
 const authenticator = <an object with an authenticate(user, pass) method, handling es6 promises, like 'ws-credentials'>;
 const secret = "añkldjfañsdfa718749823u4h12jh4ñ123"; // to encode / decode the token
 const validDays = 7; // how many days you want to keep the tokens valid, no limit
-const routes = TokenAuth.Router(authenticator, secret, validDays);
+const routes = TokenAuth.Router(authenticator, secret, validDays, log); // The log params is optional, defaults to console
 ```
 
 and when you define the Express JS routes do something like:
@@ -60,6 +60,26 @@ app.get("/api/auth/validate_token", routes.validateToken);
 ```
 
 and that's it.
+
+# Logging
+
+When you first create **TokenAuth** you can provide it with a logger, so instead
+of doing
+
+```
+const TokenAuth = require("tokenauth")(properties);
+```
+
+you can do
+
+```
+const TokenAuth = require("tokenauth")(properties, log);
+```
+
+The **log** object is any object with four methods: info(msg), warn(msg), error(msg),
+debug(msg). So you can use whichever you want, or none, and by default TokenAuth
+will log to console.
+Inside it's using ```@luispablo/multilog``` (you should check it out ;))
 
 # Operation
 This module will expect the header **x-access-token** for all requests, and the

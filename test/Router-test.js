@@ -18,6 +18,7 @@ const authenticatorMock = {
 		});
 	}
 };
+const mockLog = { debug(msg) { this.lastMessage = msg; } };
 const reqMock = {body: {}};
 const resMock = {
 	status (code) { this.statusCode = code; return this; },
@@ -27,7 +28,19 @@ const resMock = {
 	end () {}
 };
 
-const routes = Router(authenticatorMock, SECRET, VALIDITY_DAYS);
+const routes = Router(authenticatorMock, SECRET, VALIDITY_DAYS, mockLog);
+
+test("Router - is logging", assert => {
+	reqMock.body = {};
+
+	assert.plan(1);
+	resMock.status = function (code) {
+		assert.equal(mockLog.lastMessage, "No username or password provided", "HTTP 422 message");
+		return this;
+	};
+
+	routes.createToken(reqMock, resMock);
+});
 
 test("Router - Create token", assert => {
 	reqMock.body.username = USERNAME;
@@ -97,7 +110,7 @@ test("Router - Validate non-existent token", assert => {
 });
 
 test("Router - Validate expired token", assert => {
-	const expiredRoutes = Router(authenticatorMock, SECRET, -1); // negative days for generating expired tokens
+	const expiredRoutes = Router(authenticatorMock, SECRET, -1, mockLog); // negative days for generating expired tokens
 	reqMock.body = {username: USERNAME, password: PASSWORD};
 
 	assert.plan(1);
