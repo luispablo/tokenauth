@@ -20,13 +20,18 @@ const authenticatorMock = {
 };
 const mockLog = { debug(msg) { this.lastMessage = msg; } };
 const reqMock = {body: {}};
-const resMock = {
-	status (code) { this.statusCode = code; return this; },
-	sendStatus (code) { this.status(code); },
-	send (message) { this.object = message; },
-	json (object) { this.object = object; },
-	end () {}
+
+const buildResMock = () => {
+	return {
+		status (code) { this.statusCode = code; return this; },
+		sendStatus (code) { this.status(code); },
+		send (message) { this.object = message; },
+		json (object) { this.object = object; },
+		end () {}
+	};
 };
+
+const resMock = buildResMock();
 
 const routes = Router(authenticatorMock, SECRET, VALIDITY_DAYS, mockLog);
 
@@ -125,4 +130,26 @@ test("Router - Validate expired token", assert => {
 	};
 
 	expiredRoutes.createToken(reqMock, resMock);
+});
+
+test("Router - delete token", assert => {
+	reqMock.body.username = USERNAME;
+	reqMock.body.password = PASSWORD;
+
+	const deleteResMock = buildResMock();
+
+	assert.plan(1);
+
+	deleteResMock.json = function (token) {
+		reqMock.headers = {"x-access-token": token};
+		deleteResMock.end = function () {
+			deleteResMock.status = function (code) {
+				assert.equal(code, 401, "No longer valid");
+				return this;
+			};
+			routes.validateToken(reqMock, deleteResMock);
+		};
+		routes.deleteToken(reqMock, deleteResMock);
+	};
+	routes.createToken(reqMock, deleteResMock);
 });

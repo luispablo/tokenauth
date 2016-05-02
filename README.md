@@ -57,6 +57,7 @@ const app = express();
 ...
 app.post("/api/auth/token", routes.createToken);
 app.get("/api/auth/validate_token", routes.validateToken);
+app.delete("/api/auth/token", routes.deleteToken);
 ```
 
 and that's it.
