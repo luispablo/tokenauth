@@ -5,6 +5,12 @@ const req = {headers: []};
 const res = { status(code) { this.code = code; return this; }, end(message) { this.message = message; } };
 const mockLog = { debug(msg) { this.lastMessage = msg; } };
 
+test("Middleware - builds the checker without excluded routes defined", assert => {
+	const middleware = Middleware({})("/");
+	assert.equal(typeof(middleware), "function", "Builds a checker function");
+	assert.end();
+});
+
 test("Middleware - rejects request without token", assert => {
 	const appCheck = function () { return new Promise((resolve, reject) => reject()); };
 	const next = function () { assert.fail("Shouldn't invoke next"); };
