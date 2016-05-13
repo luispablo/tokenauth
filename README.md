@@ -62,6 +62,27 @@ app.delete("/api/auth/token", routes.deleteToken);
 
 and that's it.
 
+# Fetching authenticated data from client
+
+We also have a helper for your authenticated HTTP fetching, like so:
+
+```
+const AuthFetch = require("tokenauth").AuthFetch;
+
+// and say you already have a jwt object
+// then you can do:
+
+const authFetch = AuthFetch(jwt);
+
+// and then
+
+authFetch("api/users").then(res => {
+	// your magic here...
+});
+```
+
+This works as the new **window.fetch** that we have now (see https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
+
 # Logging
 
 When you first create **TokenAuth** you can provide it with a logger, so instead
