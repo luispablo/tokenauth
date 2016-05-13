@@ -32,8 +32,9 @@ const buildResMock = () => {
 };
 
 const resMock = buildResMock();
+const validTokens = [];
 
-const routes = Router(authenticatorMock, SECRET, VALIDITY_DAYS, mockLog);
+const routes = Router(validTokens)(authenticatorMock, SECRET, VALIDITY_DAYS, mockLog);
 
 test("Router - is logging", assert => {
 	reqMock.body = {};
@@ -115,7 +116,7 @@ test("Router - Validate non-existent token", assert => {
 });
 
 test("Router - Validate expired token", assert => {
-	const expiredRoutes = Router(authenticatorMock, SECRET, -1, mockLog); // negative days for generating expired tokens
+	const expiredRoutes = Router(validTokens)(authenticatorMock, SECRET, -1, mockLog); // negative days for generating expired tokens
 	reqMock.body = {username: USERNAME, password: PASSWORD};
 
 	assert.plan(1);

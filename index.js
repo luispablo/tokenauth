@@ -19,7 +19,7 @@ const tokenauth = function (config, logger) {
 	return {
 		Middleware: Middleware(appCheck, userCheck, config.excludedRoutes, log),
 		TokenBuilder: TokenBuilder(validTokens),
-		Router: Router
+		Router: Router(validTokens)
 	};
 };
 
