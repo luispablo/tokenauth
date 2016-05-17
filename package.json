@@ -1,6 +1,6 @@
 {
   "name": "tokenauth",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Simple express.js middleware to use a token for API authentication.",
   "main": "index.js",
   "scripts": {
