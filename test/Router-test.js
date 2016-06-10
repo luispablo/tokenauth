@@ -45,7 +45,7 @@ test("Router - is logging", assert => {
 		return this;
 	};
 
-	routes.createToken(reqMock, resMock);
+	routes.createToken()(reqMock, resMock);
 });
 
 test("Router - Create token", assert => {
@@ -59,7 +59,24 @@ test("Router - Create token", assert => {
 		assert.equal(object.user.username, USERNAME, "Token built for the username provided");
 	};
 
-	routes.createToken(reqMock, resMock);
+	routes.createToken()(reqMock, resMock);
+});
+
+test("Router - Unauthorized create token", assert => {
+	assert.plan(1);
+	reqMock.body = { username: USERNAME, password: PASSWORD };
+	authenticatorMock.groups = username => new Promise(resolve => resolve(["Group1", "TeamA"]));
+	resMock.json = () => null;
+	resMock.status = function (code) { assert.equal(code, 403, "HTTP unauthorized"); return this; };
+	routes.createToken(["Group2", "TeamB"])(reqMock, resMock);
+});
+
+test("Router - Authorized create token", assert => {
+	assert.plan(1);
+	reqMock.body = { username: USERNAME, password: PASSWORD };
+	authenticatorMock.groups = username => new Promise(resolve => resolve(["Group1", "TeamA"]));
+	resMock.json = (object) => assert.ok(object.token, "Exists the token property");
+	routes.createToken(["Group2", "TeamA"])(reqMock, resMock);
 });
 
 test("Router - No username or no password", assert => {
@@ -71,7 +88,7 @@ test("Router - No username or no password", assert => {
 		return this;
 	};
 
-	routes.createToken(reqMock, resMock);
+	routes.createToken()(reqMock, resMock);
 });
 
 test("Router - Invalid username or password", assert => {
@@ -84,7 +101,7 @@ test("Router - Invalid username or password", assert => {
 		assert.equal(code, 401, "HTTP error 401: unauthorized");
 	};
 
-	routes.createToken(reqMock, resMock);
+	routes.createToken()(reqMock, resMock);
 });
 
 test("Router - Validate existing & valid token", assert => {
@@ -101,7 +118,7 @@ test("Router - Validate existing & valid token", assert => {
 		routes.validateToken(reqMock, resMock);
 	};
 
-	routes.createToken(reqMock, resMock);
+	routes.createToken()(reqMock, resMock);
 });
 
 test("Router - Validate non-existent token", assert => {
@@ -130,7 +147,7 @@ test("Router - Validate expired token", assert => {
 		expiredRoutes.validateToken(reqMock, resMock);
 	};
 
-	expiredRoutes.createToken(reqMock, resMock);
+	expiredRoutes.createToken()(reqMock, resMock);
 });
 
 test("Router - delete token", assert => {
@@ -152,5 +169,5 @@ test("Router - delete token", assert => {
 		};
 		routes.deleteToken(reqMock, deleteResMock);
 	};
-	routes.createToken(reqMock, deleteResMock);
+	routes.createToken()(reqMock, deleteResMock);
 });

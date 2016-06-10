@@ -1,13 +1,9 @@
 const test = require("tape");
+const index = require("../index")({});
+const AuthFetch = require("../lib/AuthFetch");
 
-test("index - exports default", assert => {
-	const index = require("../index");
+test("index - exports", assert => {
 	assert.ok(index !== null, "Something exported as default");
-	assert.end();
-});
-
-test("index - exports AuthFetch", assert => {
-	const AuthFetch = require("../index").AuthFetch;
-	assert.equal(typeof(AuthFetch), "function", "Exports the auth fetch function");
+	assert.equal(index.AuthFetch, AuthFetch, "exports AuthFetch");
 	assert.end();
 });

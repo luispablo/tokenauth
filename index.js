@@ -2,7 +2,7 @@
 
 const AppCheck = require("./lib/AppCheck");
 const UserCheck = require("./lib/UserCheck");
-const Middleware = require("./lib/Middleware");
+const HTTPHeaderCheck = require("./lib/HTTPHeaderCheck");
 const TokenBuilder = require("./lib/TokenBuilder");
 const Router = require("./lib/Router");
 const MultiLog = require("@luispablo/multilog");
@@ -17,12 +17,11 @@ const tokenauth = function (config, logger) {
 	const userCheck = UserCheck(validTokens, config.secret, log);
 
 	return {
-		Middleware: Middleware(appCheck, userCheck, config.excludedRoutes, log),
+		AuthFetch: AuthFetch,
+		Middleware: HTTPHeaderCheck(appCheck, userCheck, log),
 		TokenBuilder: TokenBuilder(validTokens),
 		Router: Router(validTokens)
 	};
 };
-
-tokenauth.AuthFetch = AuthFetch;
 
 module.exports = tokenauth;

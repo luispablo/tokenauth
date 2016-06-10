@@ -3,79 +3,91 @@ Simple express.js middleware to use a token for API authentication.
 
 **It's meant to use combined with jwt-simple (https://www.npmjs.com/package/jwt-simple)**
 
-# Configuration
+# Authentication / authorization middleware for Express JS
+
 You must supply a JSON object with the following configuration:
 
-```
-const properties = {
+```javascript
+var properties = {
 	secret: "asdjfasdf7fta9sd6f7asdfy7698698asd6faqhkjewr", // very long random string
-	excludedRoutes: ["api/login", "api/verify"],
 	staticKeys: {
 		"MOBILE_APP": "añlkajsdfkaaa66797987080adaaaeer33",
 		"INTERNAL_APP": "hhklkiokjr878778fdjn3nn3nmn333jkkjlñ"
 	}
 };
-```
 
-and then build the middleware:
+// Build the ExpressJS middleware
+var authMiddleware = require("tokenauth")(properties).Middleware;
 
+// now you can do:
+app.use("api/users", authMiddleware, require("routers/users"));
 ```
-const TokenAuth = require("tokenauth")(properties);
-```
-
-and then just use it as an express JS middleware. For example, when adding routes:
-
-```
-app.use("api/users", TokenAuth.Middleware("api/users"), require("routers/users"));
-```
-
-and to sign in a user do:
-
-```
-const token = TokenAuth.TokenBuilder(username, days);
-```
-
-where username is the username (dogh!), and days is the number of days you want
-this token to be valid. And then... use it as you like.
 
 # Router
 
-You also have a Router to add to your Express JS app. Do it like this:
+This helper object has already built-in the basic routes for handling the JSON web token management.
 
-```
-const authenticator = <an object with an authenticate(user, pass) method, handling es6 promises, like 'ws-credentials'>;
-const secret = "añkldjfañsdfa718749823u4h12jh4ñ123"; // to encode / decode the token
-const validDays = 7; // how many days you want to keep the tokens valid, no limit
-const routes = TokenAuth.Router(authenticator, secret, validDays, log); // The log params is optional, defaults to console
+```javascript
+var logger = ... // this param is optional, but you can use something similar to @luispablo/multilog (https://www.npmjs.com/package/@luispablo/multilog)
+
+var tokenauth = require("tokenauth")(properties, logger);
+
+var authenticator = ... // an object with an authenticate(user, pass) method, handling es6 promises, like 'ws-credentials'
+var secret = "añkldjfañsdfa718749823u4h12jh4ñ123"; // to encode / decode the token
+var validDays = 7; // how many days you want to keep the tokens valid, no limit
+var routes = tokenauth.Router(authenticator, secret, validDays, log); // The log params is optional, defaults to console
 ```
 
 and when you define the Express JS routes do something like:
 
-```
-const express = require("express");
-const app = express();
+```javascript
+var express = require("express");
+var app = express();
+
 ...
-app.post("/api/auth/token", routes.createToken);
-app.get("/api/auth/validate_token", routes.validateToken);
-app.delete("/api/auth/token", routes.deleteToken);
+
+app.post("/api/auth/token", routes.createToken()); // Creates new JSON web taken with username / password authentication
+app.get("/api/auth/validate_token", routes.validateToken); // Validate if a given JWT exists and is not expired
+app.delete("/api/auth/token", routes.deleteToken); // Removes JWT from local storage
 ```
 
 and that's it.
+
+## One additional step: authorization
+
+If you want to restrict which users can get a JSON web token, you can provide the groups allowed to do so to the router thats handles the POSTing to request such new JWTs.
+So going back to the last example, instead of just doing:
+
+```javascript
+	app.post("/api/auth/token", routes.createToken());
+```
+
+you can do
+
+```javascript
+	app.post("/api/auth/token", routes.createToken("Group1", "TeamA"));
+```
+
+where _Group1_ and _TeamA_ are the only groups allowed to access, the only ones with permission to create new JSON web tokens. So, going back to our example, when building the router you did:
+
+```javascript
+	var routes = tokenauth.Router(authenticator, secret, validDays, log);
+```
+
+The **authenticator** object has to provide a **groups** function that responds an ES6 promise, and resolves an array of group names. If any of the user groups is in the provided group list, the JWT will be created.
 
 # Fetching authenticated data from client
 
 We also have a helper for your authenticated HTTP fetching, like so:
 
-```
-const AuthFetch = require("tokenauth").AuthFetch;
+```javascript
+var AuthFetch = require("tokenauth").AuthFetch;
 
 // and say you already have a jwt object
 // then you can do:
-
-const authFetch = AuthFetch(jwt);
+var authFetch = AuthFetch(jwt);
 
 // and then
-
 authFetch("api/users").then(res => {
 	// your magic here...
 });
@@ -83,19 +95,30 @@ authFetch("api/users").then(res => {
 
 This works as the new **window.fetch** that we have now (see https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
 
+# TokenBuilder
+
+This is a helper if you want to manually build the JWT.
+
+```javascript
+var token = require("tokenauth").TokenBuilder(username, days);
+```
+
+where username is the username (dogh!), and days is the number of days you want
+this token to be valid. And then... use it as you like.
+
 # Logging
 
 When you first create **TokenAuth** you can provide it with a logger, so instead
 of doing
 
-```
-const TokenAuth = require("tokenauth")(properties);
+```javascript
+var TokenAuth = require("tokenauth")(properties);
 ```
 
 you can do
 
-```
-const TokenAuth = require("tokenauth")(properties, log);
+```javascript
+var TokenAuth = require("tokenauth")(properties, log);
 ```
 
 The **log** object is any object with four methods: info(msg), warn(msg), error(msg),
@@ -104,6 +127,7 @@ will log to console.
 Inside it's using ```@luispablo/multilog``` (you should check it out ;))
 
 # Operation
+
 This module will expect the header **x-access-token** for all requests, and the
 header **x-access-app-id** for the static keys.
 So, if a mobile app should have a fixed key to access your API, it can use an id-key
