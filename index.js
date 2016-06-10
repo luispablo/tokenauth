@@ -17,11 +17,12 @@ const tokenauth = function (config, logger) {
 	const userCheck = UserCheck(validTokens, config.secret, log);
 
 	return {
-		AuthFetch: AuthFetch,
 		Middleware: HTTPHeaderCheck(appCheck, userCheck, log),
 		TokenBuilder: TokenBuilder(validTokens),
 		Router: Router(validTokens)
 	};
 };
+
+tokenauth.AuthFetch = AuthFetch;
 
 module.exports = tokenauth;
