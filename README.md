@@ -1,6 +1,8 @@
 # tokenauth
 Simple express.js middleware to use a token for API authentication.
 
+**News in 2.1.0 version: added support for Node 0.10**
+
 **It's meant to use combined with jwt-simple (https://www.npmjs.com/package/jwt-simple)**
 
 # Authentication / authorization middleware for Express JS

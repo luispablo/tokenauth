@@ -1,68 +1,68 @@
-const test = require("tape");
-const jwt = require("jwt-simple");
-const UserCheck = require("../lib/UserCheck");
-const moment = require("moment");
+var test = require("tape");
+var jwt = require("jwt-simple");
+var UserCheck = require("../lib/UserCheck");
+var moment = require("moment");
 
-const SECRET = "secret";
-const USERNAME_1 = "username1";
-const USERNAME_2 = "username2";
+var SECRET = "secret";
+var USERNAME_1 = "username1";
+var USERNAME_2 = "username2";
 
-const inSevenDays = moment().add(7, 'days').valueOf();
-const TOKEN_1 = jwt.encode({iss: USERNAME_1, exp: inSevenDays}, SECRET);
-const TOKEN_2 = jwt.encode({iss: USERNAME_2, exp: inSevenDays}, SECRET);
-const INVALID_TOKEN = "invalid_token";
+var inSevenDays = moment().add(7, 'days').valueOf();
+var TOKEN_1 = jwt.encode({iss: USERNAME_1, exp: inSevenDays}, SECRET);
+var TOKEN_2 = jwt.encode({iss: USERNAME_2, exp: inSevenDays}, SECRET);
+var INVALID_TOKEN = "invalid_token";
 
-const mockLog = { debug(msg) { this.lastMessge = msg; } };
-const check = UserCheck([TOKEN_1, TOKEN_2], SECRET, mockLog);
+var mockLog = { debug: function (msg) { this.lastMessge = msg; } };
+var check = UserCheck([TOKEN_1, TOKEN_2], SECRET, mockLog);
 
-test("UserCheck - is logging", assert => {
-	check(INVALID_TOKEN).catch(() => {
+test("UserCheck - is logging", function (assert) {
+	check(INVALID_TOKEN).catch(function () {
 		assert.equal(mockLog.lastMessge, "Invalid token", "Logged debug message");
 		assert.end();
 	});
 });
 
-test("UserCheck - invalid token", assert => {
+test("UserCheck - invalid token", function (assert) {
 	assert.plan(1);
 
-	check(INVALID_TOKEN).then(() => {
+	check(INVALID_TOKEN).then(function () {
 		assert.fail("Should have failed");
-	}).catch(error => {
+	}).catch(function (error) {
 		assert.equal(error.message, "Invalid token", "Invalid token message");
 	});
 });
 
-test("UserCheck - expired token", assert => {
+test("UserCheck - expired token", function (assert) {
 	assert.plan(1);
 
-	const yesterday = moment().subtract(1, "days").valueOf();
-	const expiredToken = jwt.encode({iss: USERNAME_1, exp: yesterday}, SECRET);
-	const expiredCheck = UserCheck([expiredToken], SECRET, mockLog);
+	var yesterday = moment().subtract(1, "days").valueOf();
+	var expiredToken = jwt.encode({iss: USERNAME_1, exp: yesterday}, SECRET);
+	var expiredCheck = UserCheck([expiredToken], SECRET, mockLog);
 
-	expiredCheck(expiredToken).then(() => {
+	expiredCheck(expiredToken).then(function () {
 		assert.fail("Should have failed");
-	}).catch(error => {
+	}).catch(function (error) {
 		assert.equal(error.message, "Access token has expired", "Token expired message");
 	})
 });
 
-test("UserCheck - no valid tokens", assert => {
+test("UserCheck - no valid tokens", function (assert) {
 	assert.plan(1);
-	const emptyCheck = UserCheck([], SECRET, mockLog);
+	var emptyCheck = UserCheck([], SECRET, mockLog);
 
-	emptyCheck(TOKEN_1).then(() => {
+	emptyCheck(TOKEN_1).then(function () {
 		assert.fail("Should have failed");
-	}).catch(error => {
+	}).catch(function (error) {
 		assert.equal(error.message, "Invalid token", "Invalid token message");
 	});
 });
 
-test("UserCheck - valid token", assert => {
+test("UserCheck - valid token", function (assert) {
 	assert.plan(1);
 
-	check(TOKEN_1).then(() => {
+	check(TOKEN_1).then(function () {
 		assert.pass("Token valid");
-	}).catch(error => {
+	}).catch(function (error) {
 		assert.fail(error.message);
 	});
 });

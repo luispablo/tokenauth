@@ -1,45 +1,45 @@
-const test = require("tape");
-const HTTPHeaderCheck = require("../lib/HTTPHeaderCheck");
+var test = require("tape");
+var HTTPHeaderCheck = require("../lib/HTTPHeaderCheck");
 
-const req = {headers: []};
-const res = {
-	status(code) {
+var req = {headers: []};
+var res = {
+	status: function (code) {
 		this.code = code;
 		return this;
 	},
-	end (object) { this.object = object; }
+	end: function (object) { this.object = object; }
 };
-const mockLog = { debug(msg) { this.lastMessage = msg; } };
+var mockLog = { debug: function (msg) { this.lastMessage = msg; } };
 
-test("HTTPHeaderCheck - is logging", assert => {
-	const logCheck = HTTPHeaderCheck(null, null, mockLog);
+test("HTTPHeaderCheck - is logging", function (assert) {
+	var logCheck = HTTPHeaderCheck(null, null, mockLog);
 	logCheck(req, res);
 	assert.equal(mockLog.lastMessage, "No token provided", "No token provided debug message");
 	assert.end();
 });
 
-test("HTTPHeaderCheck - rejects no token", assert => {
-	const headerCheck = HTTPHeaderCheck(null, null, mockLog);
+test("HTTPHeaderCheck - rejects no token", function (assert) {
+	var headerCheck = HTTPHeaderCheck(null, null, mockLog);
 	headerCheck(req, res);
 	assert.equal(401, res.code);
 	assert.end();
 });
 
-test("HTTPHeaderCheck - accepts valid user token", assert => {
+test("HTTPHeaderCheck - accepts valid user token", function (assert) {
 	assert.plan(1);
 
 	req.headers['x-access-token'] = "token";
-	const userCheck = function () { return new Promise((resolve, reject) => resolve()); };
-	const headerCheck = HTTPHeaderCheck(null, userCheck, mockLog);
-	const next = function () { assert.pass("next invoked"); };
+	var userCheck = function () { return new Promise(function (resolve) { resolve(); }); };
+	var headerCheck = HTTPHeaderCheck(null, userCheck, mockLog);
+	var next = function () { assert.pass("next invoked"); };
 
 	headerCheck(req, res, next);
 });
 
-test("HTTPHeaderCheck - rejects invalid user token", assert => {
+test("HTTPHeaderCheck - rejects invalid user token", function (assert) {
 	req.headers['x-access-token'] = "token";
-	const userCheck = function () { return new Promise((resolve, reject) => reject()); };
-	const headerCheck = HTTPHeaderCheck(null, userCheck, mockLog);
+	var userCheck = function () { return new Promise(function (resolve) { reject(); }); };
+	var headerCheck = HTTPHeaderCheck(null, userCheck, mockLog);
 
 	headerCheck(req, res);
 
@@ -47,26 +47,27 @@ test("HTTPHeaderCheck - rejects invalid user token", assert => {
 	assert.end();
 });
 
-test("HTTPHeaderCheck - accepts valid app id / key", assert => {
+test("HTTPHeaderCheck - accepts valid app id / key", function (assert) {
 	assert.plan(1);
 
 	req.headers['x-access-app-id'] = "id";
 	req.headers['x-access-token'] = "key";
-	const appCheck = function () { return new Promise((resolve, reject) => resolve()); };
-	const headerCheck = HTTPHeaderCheck(appCheck, null, mockLog);
-	const next = function () { assert.pass("next inoked"); };
+	var appCheck = function () { return new Promise(function (resolve) { resolve(); }); };
+	var headerCheck = HTTPHeaderCheck(appCheck, null, mockLog);
+	var next = function () { assert.pass("next inoked"); };
 
 	headerCheck(req, res, next);
 });
 
-test("HTTPHeaderCheck - rejects invalid app id / key", assert => {
+test("HTTPHeaderCheck - rejects invalid app id / key", function (assert) {
+	assert.plan(1);
+
 	req.headers['x-access-app-id'] = "id";
 	req.headers['x-access-token'] = "key";
-	const appCheck = function () { return new Promise((resolve, reject) => reject()); };
-	const headerCheck = HTTPHeaderCheck(appCheck, null, mockLog);
+	var error = { status: 401 };
+	var appCheck = function () { return new Promise(function (resolve, reject) { reject(error); }); };
+	var headerCheck = HTTPHeaderCheck(appCheck, null, mockLog);
+	res.status = function (code) { assert.equal(code, error.status, "Should have failed"); };
 
 	headerCheck(req, res);
-
-	assert.equal(res.code, 401, "Should have failed");
-	assert.end();
 });

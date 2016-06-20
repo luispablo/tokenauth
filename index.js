@@ -1,20 +1,20 @@
 "use strict";
 
-const AppCheck = require("./lib/AppCheck");
-const UserCheck = require("./lib/UserCheck");
-const HTTPHeaderCheck = require("./lib/HTTPHeaderCheck");
-const TokenBuilder = require("./lib/TokenBuilder");
-const Router = require("./lib/Router");
-const MultiLog = require("@luispablo/multilog");
-const AuthFetch = require("./lib/AuthFetch");
+var AppCheck = require("./lib/AppCheck");
+var UserCheck = require("./lib/UserCheck");
+var HTTPHeaderCheck = require("./lib/HTTPHeaderCheck");
+var TokenBuilder = require("./lib/TokenBuilder");
+var Router = require("./lib/Router");
+var MultiLog = require("@luispablo/multilog");
+var AuthFetch = require("./lib/AuthFetch");
 
-const consoleLogger = MultiLog([{name: "console", level: "ERROR"}]);
+var consoleLogger = MultiLog([{name: "console", level: "ERROR"}]);
 
-const tokenauth = function (config, logger) {
-	const log = logger || consoleLogger;
-	const validTokens = [];
-	const appCheck = AppCheck(config.staticKeys, log);
-	const userCheck = UserCheck(validTokens, config.secret, log);
+var tokenauth = function (config, logger) {
+	var log = logger || consoleLogger;
+	var validTokens = [];
+	var appCheck = AppCheck(config.staticKeys, log);
+	var userCheck = UserCheck(validTokens, config.secret, log);
 
 	return {
 		Middleware: HTTPHeaderCheck(appCheck, userCheck, log),

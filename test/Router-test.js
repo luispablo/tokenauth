@@ -1,42 +1,42 @@
 "use strict";
 
-const test = require("tape");
-const moment = require("moment");
-const jwt = require("jwt-simple");
-const Router = require("../lib/Router");
+var test = require("tape");
+var moment = require("moment");
+var jwt = require("jwt-simple");
+var Router = require("../lib/Router");
 
-const USERNAME = "username";
-const PASSWORD = "password";
-const SECRET = "secret";
-const VALIDITY_DAYS = 7;
+var USERNAME = "username";
+var PASSWORD = "password";
+var SECRET = "secret";
+var VALIDITY_DAYS = 7;
 
-const authenticatorMock = {
-	authenticate (username, password) {
-		return new Promise((resolve, reject) => {
+var authenticatorMock = {
+	authenticate: function (username, password) {
+		return new Promise(function (resolve, reject) {
 			if (username === USERNAME && password === PASSWORD) resolve();
 			else reject({code: 401, message: "Invalid username or password"});
 		});
 	}
 };
-const mockLog = { debug(msg) { this.lastMessage = msg; } };
-const reqMock = {body: {}};
+var mockLog = { debug: function (msg) { this.lastMessage = msg; } };
+var reqMock = {body: {}};
 
-const buildResMock = () => {
+var buildResMock = function () {
 	return {
-		status (code) { this.statusCode = code; return this; },
-		sendStatus (code) { this.status(code); },
-		send (message) { this.object = message; },
-		json (object) { this.object = object; },
-		end () {}
+		status: function (code) { this.statusCode = code; return this; },
+		sendStatus: function (code) { this.status(code); },
+		send: function (message) { this.object = message; },
+		json: function (object) { this.object = object; },
+		end: function () {}
 	};
 };
 
-const resMock = buildResMock();
-const validTokens = [];
+var resMock = buildResMock();
+var validTokens = [];
 
-const routes = Router(validTokens)(authenticatorMock, SECRET, VALIDITY_DAYS, mockLog);
+var routes = Router(validTokens)(authenticatorMock, SECRET, VALIDITY_DAYS, mockLog);
 
-test("Router - is logging", assert => {
+test("Router - is logging", function (assert) {
 	reqMock.body = {};
 
 	assert.plan(1);
@@ -48,13 +48,13 @@ test("Router - is logging", assert => {
 	routes.createToken()(reqMock, resMock);
 });
 
-test("Router - Create token", assert => {
+test("Router - Create token", function (assert) {
 	reqMock.body.username = USERNAME;
 	reqMock.body.password = PASSWORD;
 
 	assert.plan(2);
 
-	resMock.json = (object) => {
+	resMock.json = function (object) {
 		assert.ok(object.token, "Exists the token property");
 		assert.equal(object.user.username, USERNAME, "Token built for the username provided");
 	};
@@ -62,24 +62,24 @@ test("Router - Create token", assert => {
 	routes.createToken()(reqMock, resMock);
 });
 
-test("Router - Unauthorized create token", assert => {
+test("Router - Unauthorized create token", function (assert) {
 	assert.plan(1);
 	reqMock.body = { username: USERNAME, password: PASSWORD };
-	authenticatorMock.groups = username => new Promise(resolve => resolve(["Group1", "TeamA"]));
-	resMock.json = () => null;
+	authenticatorMock.groups = function (username) { return new Promise(function (resolve) { resolve(["Group1", "TeamA"]); }); };
+	resMock.json = function () {};
 	resMock.status = function (code) { assert.equal(code, 403, "HTTP unauthorized"); return this; };
 	routes.createToken(["Group2", "TeamB"])(reqMock, resMock);
 });
 
-test("Router - Authorized create token", assert => {
+test("Router - Authorized create token", function (assert) {
 	assert.plan(1);
 	reqMock.body = { username: USERNAME, password: PASSWORD };
-	authenticatorMock.groups = username => new Promise(resolve => resolve(["Group1", "TeamA"]));
-	resMock.json = (object) => assert.ok(object.token, "Exists the token property");
+	authenticatorMock.groups = function (username) { return new Promise(function (resolve) { resolve(["Group1", "TeamA"]); }); };
+	resMock.json = function (object) { assert.ok(object.token, "Exists the token property"); };
 	routes.createToken(["Group2", "TeamA"])(reqMock, resMock);
 });
 
-test("Router - No username or no password", assert => {
+test("Router - No username or no password", function (assert) {
 	reqMock.body = {};
 
 	assert.plan(1);
@@ -91,7 +91,7 @@ test("Router - No username or no password", assert => {
 	routes.createToken()(reqMock, resMock);
 });
 
-test("Router - Invalid username or password", assert => {
+test("Router - Invalid username or password", function (assert) {
 	reqMock.body.username = "invalid";
 	reqMock.body.password = "invalid";
 
@@ -104,7 +104,7 @@ test("Router - Invalid username or password", assert => {
 	routes.createToken()(reqMock, resMock);
 });
 
-test("Router - Validate existing & valid token", assert => {
+test("Router - Validate existing & valid token", function (assert) {
 	reqMock.body = {username: USERNAME, password: PASSWORD};
 
 	assert.plan(1);
@@ -121,7 +121,7 @@ test("Router - Validate existing & valid token", assert => {
 	routes.createToken()(reqMock, resMock);
 });
 
-test("Router - Validate non-existent token", assert => {
+test("Router - Validate non-existent token", function (assert) {
 	assert.plan(1);
 
 	reqMock.headers = {"x-access-token": "nonexistent"};
@@ -132,8 +132,8 @@ test("Router - Validate non-existent token", assert => {
 	routes.validateToken(reqMock, resMock);
 });
 
-test("Router - Validate expired token", assert => {
-	const expiredRoutes = Router(validTokens)(authenticatorMock, SECRET, -1, mockLog); // negative days for generating expired tokens
+test("Router - Validate expired token", function (assert) {
+	var expiredRoutes = Router(validTokens)(authenticatorMock, SECRET, -1, mockLog); // negative days for generating expired tokens
 	reqMock.body = {username: USERNAME, password: PASSWORD};
 
 	assert.plan(1);
@@ -150,11 +150,11 @@ test("Router - Validate expired token", assert => {
 	expiredRoutes.createToken()(reqMock, resMock);
 });
 
-test("Router - delete token", assert => {
+test("Router - delete token", function (assert) {
 	reqMock.body.username = USERNAME;
 	reqMock.body.password = PASSWORD;
 
-	const deleteResMock = buildResMock();
+	var deleteResMock = buildResMock();
 
 	assert.plan(1);
 

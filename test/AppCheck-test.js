@@ -1,47 +1,47 @@
-const test = require("tape");
-const AppCheck = require("../lib/AppCheck");
+var test = require("tape");
+var AppCheck = require("../lib/AppCheck");
 
-const APP_1_ID = "App1";
-const APP_1_KEY = "ajñklasdf687687asfhaskhakjsdhf";
-const UNEXISTENT_ID = "unexistentId";
+var APP_1_ID = "App1";
+var APP_1_KEY = "ajñklasdf687687asfhaskhakjsdhf";
+var UNEXISTENT_ID = "unexistentId";
 
-const KEYS = [];
+var KEYS = [];
 KEYS[APP_1_ID] = APP_1_KEY;
 
-const mockLog = { debug (msg) { this.lastMessage = msg; } };
-const check = AppCheck(KEYS, mockLog);
+var mockLog = { debug: function (msg) { this.lastMessage = msg; } };
+var check = AppCheck(KEYS, mockLog);
 
-test("AppCheck - is logging", assert => {
-	check(UNEXISTENT_ID, APP_1_KEY).catch(() => {
-		assert.equal(mockLog.lastMessage, `${UNEXISTENT_ID} is not a valid application ID.`, "Invalid app ID message");
+test("AppCheck - is logging", function (assert) {
+	check(UNEXISTENT_ID, APP_1_KEY).catch(function () {
+		assert.equal(mockLog.lastMessage, UNEXISTENT_ID +" is not a valid application ID.", "Invalid app ID message");
 		assert.end();
 	});
 });
 
-test("AppCheck - unexistent ID", assert => {
+test("AppCheck - unexistent ID", function (assert) {
 	assert.plan(1);
-	check(UNEXISTENT_ID, APP_1_KEY).then(() => {
+	check(UNEXISTENT_ID, APP_1_KEY).then(function () {
 		assert.fail("Should have failed");
-	}).catch(error => {
-		assert.equal(error.message, `${UNEXISTENT_ID} is not a valid application ID.`, "Invalid app ID message");
+	}).catch(function (error) {
+		assert.equal(error.message, UNEXISTENT_ID +" is not a valid application ID.", "Invalid app ID message");
 	})
 });
 
-test("AppCheck - invalid key", assert => {
-	const INVALID_KEY = "invalid_key";
+test("AppCheck - invalid key", function (assert) {
+	var INVALID_KEY = "invalid_key";
 	assert.plan(1);
-	check(APP_1_ID, INVALID_KEY).then(() => {
+	check(APP_1_ID, INVALID_KEY).then(function () {
 		assert.fail("Should have failed");
-	}).catch(error => {
-		assert.equal(error.message, `${INVALID_KEY} key is invalid for the application ID ${APP_1_ID}.`, "Invalid app key message");
+	}).catch(function (error) {
+		assert.equal(error.message, INVALID_KEY +" key is invalid for the application ID "+ APP_1_ID +".", "Invalid app key message");
 	});
 });
 
-test("AppCheck - valid ID / key pair", assert => {
+test("AppCheck - valid ID / key pair", function (assert) {
 	assert.plan(1);
-	check(APP_1_ID, APP_1_KEY).then(() => {
+	check(APP_1_ID, APP_1_KEY).then(function () {
 		assert.pass("It works");
-	}).catch(error => {
+	}).catch(function (error) {
 		assert.fail(error.message);
 	});
 });
