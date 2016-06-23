@@ -5,7 +5,7 @@ var UserCheck = require("./lib/UserCheck");
 var HTTPHeaderCheck = require("./lib/HTTPHeaderCheck");
 var TokenBuilder = require("./lib/TokenBuilder");
 var Router = require("./lib/Router");
-var MultiLog = require("@luispablo/multilog");
+var MultiLog = require("luispablo-multilog");
 var AuthFetch = require("./lib/AuthFetch");
 
 var consoleLogger = MultiLog([{name: "console", level: "ERROR"}]);
