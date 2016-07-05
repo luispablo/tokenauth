@@ -1,8 +1,6 @@
 "use strict";
 
 var test = require("tape");
-var moment = require("moment");
-var jwt = require("jwt-simple");
 var Router = require("../lib/Router");
 
 var USERNAME = "username";
@@ -40,7 +38,7 @@ test("Router - is logging", function (assert) {
 	reqMock.body = {};
 
 	assert.plan(1);
-	resMock.status = function (code) {
+	resMock.status = function () {
 		assert.equal(mockLog.lastMessage, "No username or password provided", "HTTP 422 message");
 		return this;
 	};
@@ -62,10 +60,27 @@ test("Router - Create token", function (assert) {
 	routes.createToken()(reqMock, resMock);
 });
 
+test("Router - Additional data in token", function (assert) {
+	assert.plan(3);
+	var additionalData = { field1: "value1", field2: "value2" };
+	var additionalDataAuth = {
+		authenticate: function () {
+			return new Promise(function (resolve) { resolve(additionalData); });
+		}
+	};
+	resMock.json = function (object) {
+		assert.equal(object.user.username, "username", "The username is still there");
+		assert.equal(object.user.field1, additionalData.field1, "First additional data field");
+		assert.equal(object.user.field2, additionalData.field2, "Second additional data field");
+	};
+	var routesAdditionalData = Router(validTokens)(additionalDataAuth, SECRET, VALIDITY_DAYS, mockLog);
+	routesAdditionalData.createToken()(reqMock, resMock);
+});
+
 test("Router - Unauthorized create token", function (assert) {
 	assert.plan(1);
 	reqMock.body = { username: USERNAME, password: PASSWORD };
-	authenticatorMock.groups = function (username) { return new Promise(function (resolve) { resolve(["Group1", "TeamA"]); }); };
+	authenticatorMock.groups = function () { return new Promise(function (resolve) { resolve(["Group1", "TeamA"]); }); };
 	resMock.json = function () {};
 	resMock.status = function (code) { assert.equal(code, 403, "HTTP unauthorized"); return this; };
 	routes.createToken(["Group2", "TeamB"])(reqMock, resMock);
@@ -74,7 +89,7 @@ test("Router - Unauthorized create token", function (assert) {
 test("Router - Authorized create token", function (assert) {
 	assert.plan(1);
 	reqMock.body = { username: USERNAME, password: PASSWORD };
-	authenticatorMock.groups = function (username) { return new Promise(function (resolve) { resolve(["Group1", "TeamA"]); }); };
+	authenticatorMock.groups = function () { return new Promise(function (resolve) { resolve(["Group1", "TeamA"]); }); };
 	resMock.json = function (object) { assert.ok(object.token, "Exists the token property"); };
 	routes.createToken(["Group2", "TeamA"])(reqMock, resMock);
 });

@@ -55,6 +55,43 @@ app.delete("/api/auth/token", routes.deleteToken); // Removes JWT from local sto
 
 and that's it.
 
+### The authenticator
+
+In the previous section you saw the following:
+
+```javascript
+var authenticator = ... // an object with an authenticate(user, pass) method, handling es6 promises, like 'ws-credentials'
+```
+
+this is expecting an object with a function like this:
+
+```javascript
+authenticate: function (username, password) {
+	return new Promise(function (resolve, reject) {
+		if ( /* ¿authenticated? */) {
+			resolve();
+		} else {
+			reject();
+		}
+	};
+}
+```
+
+by default token auth will put the **username** and the **expires** timestamp in
+the JWT. If you want to include other fields, include them in the resolve, like so:
+
+```javascript
+authenticate: function (username, password) {
+	return new Promise(function (resolve, reject) {
+		if ( /* ¿authenticated? */) {
+			resolve({name: "Richard", lastname: "Nixon", age: 57});
+		} else {
+			reject();
+		}
+	};
+}
+```
+
 ## One additional step: authorization
 
 If you want to restrict which users can get a JSON web token, you can provide the groups allowed to do so to the router thats handles the POSTing to request such new JWTs.
@@ -96,17 +133,6 @@ authFetch("api/users").then(res => {
 ```
 
 This works as the new **window.fetch** that we have now (see https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
-
-# TokenBuilder
-
-This is a helper if you want to manually build the JWT.
-
-```javascript
-var token = require("tokenauth").TokenBuilder(username, days);
-```
-
-where username is the username (dogh!), and days is the number of days you want
-this token to be valid. And then... use it as you like.
 
 # Logging
 

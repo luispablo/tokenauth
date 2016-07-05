@@ -3,7 +3,6 @@
 var AppCheck = require("./lib/AppCheck");
 var UserCheck = require("./lib/UserCheck");
 var HTTPHeaderCheck = require("./lib/HTTPHeaderCheck");
-var TokenBuilder = require("./lib/TokenBuilder");
 var Router = require("./lib/Router");
 var MultiLog = require("luispablo-multilog");
 var AuthFetch = require("./lib/AuthFetch");
@@ -18,7 +17,6 @@ var tokenauth = function (config, logger) {
 
 	return {
 		Middleware: HTTPHeaderCheck(appCheck, userCheck, log),
-		TokenBuilder: TokenBuilder(validTokens),
 		Router: Router(validTokens)
 	};
 };
