@@ -14,6 +14,16 @@ test("AuthFetch - Sets authentication header", function (assert) {
 	authFetch("random URL");
 });
 
+test("AuthFetch - Prevent Content-Type and JSON.stringify with multipart: true", function (assert) {
+	assert.plan(2);
+	var fetchMock = function (URL, options) {
+		assert.notOk(options.headers["Content-Type"], "This shouldn't be set");
+		assert.notEqual(typeof(options.body), "string", "The body shouldn't be stringified");
+	};
+	var authFetch = AuthFetch(jwtMock, fetchMock);
+	authFetch("/someurl", { body: { id: 1 }, multipart: true });
+});
+
 test("AuthFetch - Accepts JSON and content type JSON", function (assert) {
 	assert.plan(2);
 	var fetchMock = function (URL, options) {

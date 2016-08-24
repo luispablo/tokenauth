@@ -134,6 +134,24 @@ authFetch("api/users").then(res => {
 
 This works as the new **window.fetch** that we have now (see https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
 
+## Multipart/Form-Data
+
+If you're submiting a form POST or PUT with multipart content, you must add a
+parameter ```multipart``` set to **true**.
+
+```javascript
+var AuthFetch = require("tokenauth").AuthFetch;
+var authFetch = AuthFetch(jwt);
+
+authFetch("api/some-post", { multipart: true }).then(res => {
+	// your magic here...
+});
+```
+
+_This will prevent the component from setting the ```Content-Type``` to
+```application/json```, and the ```JSON.strnigify``` from the body content
+(it usually is a ```FormData```)_
+
 # Logging
 
 When you first create **TokenAuth** you can provide it with a logger, so instead
