@@ -55,6 +55,14 @@ app.delete("/api/auth/token", routes.deleteToken); // Removes JWT from local sto
 
 and that's it.
 
+## Middleware auth data provided
+
+Starting in version 2.4.0, the auth middleware leaves data in the `req` object.
+
+```javascript
+req.authUsername // => 'username'
+```
+
 ### The authenticator
 
 In the previous section you saw the following:

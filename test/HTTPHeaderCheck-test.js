@@ -36,6 +36,21 @@ test("HTTPHeaderCheck - accepts valid user token", function (assert) {
 	headerCheck(req, res, next);
 });
 
+test("HTTPHeaderCheck - sets auth username in req", function (assert) {
+  var USERNAME = "test_username";
+  var userCheck = function () {
+    return new Promise(function (resolve) {
+      resolve({iss: USERNAME});
+    });
+  };
+  var headerCheck = HTTPHeaderCheck(null, userCheck, mockLog);
+  var next = function () {
+    assert.equal(req.authUsername, USERNAME, "The username from JWT");
+    assert.end();
+  };
+  headerCheck(req, res, next);
+});
+
 test("HTTPHeaderCheck - rejects invalid user token", function (assert) {
 	req.headers['x-access-token'] = "token";
 	var userCheck = function () { return new Promise(function (resolve) { reject(); }); };
@@ -67,7 +82,10 @@ test("HTTPHeaderCheck - rejects invalid app id / key", function (assert) {
 	var error = { status: 401 };
 	var appCheck = function () { return new Promise(function (resolve, reject) { reject(error); }); };
 	var headerCheck = HTTPHeaderCheck(appCheck, null, mockLog);
-	res.status = function (code) { assert.equal(code, error.status, "Should have failed"); };
+	res.status = function (code) { 
+    assert.equal(code, error.status, "Should have failed"); 
+    return this;
+  };
 
 	headerCheck(req, res);
 });

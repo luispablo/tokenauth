@@ -107,6 +107,7 @@ test("Router - No username or no password", function (assert) {
 });
 
 test("Router - Invalid username or password", function (assert) {
+  resMock = buildResMock();
 	reqMock.body.username = "invalid";
 	reqMock.body.password = "invalid";
 
@@ -114,6 +115,7 @@ test("Router - Invalid username or password", function (assert) {
 
 	resMock.status = function (code) {
 		assert.equal(code, 401, "HTTP error 401: unauthorized");
+    return this;
 	};
 
 	routes.createToken()(reqMock, resMock);

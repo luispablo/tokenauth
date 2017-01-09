@@ -8,7 +8,8 @@ var USERNAME_1 = "username1";
 var USERNAME_2 = "username2";
 
 var inSevenDays = moment().add(7, 'days').valueOf();
-var TOKEN_1 = jwt.encode({iss: USERNAME_1, exp: inSevenDays}, SECRET);
+var DECODED_TOKEN_1 = {iss: USERNAME_1, exp: inSevenDays};
+var TOKEN_1 = jwt.encode(DECODED_TOKEN_1, SECRET);
 var TOKEN_2 = jwt.encode({iss: USERNAME_2, exp: inSevenDays}, SECRET);
 var INVALID_TOKEN = "invalid_token";
 
@@ -65,4 +66,11 @@ test("UserCheck - valid token", function (assert) {
 	}).catch(function (error) {
 		assert.fail(error.message);
 	});
+});
+
+test("UserCheck - resolve with decoded token", function (assert) {
+  check(TOKEN_1).then(function (decodedToken) {
+    assert.deepEqual(decodedToken, DECODED_TOKEN_1);
+    assert.end();
+  });
 });
