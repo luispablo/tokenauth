@@ -57,11 +57,14 @@ and that's it.
 
 ## Middleware auth data provided
 
-Starting in version 2.4.0, the auth middleware leaves data in the `req` object.
+Tokenauth leaves the decoded token info in the request.
 
 ```javascript
-req.authUsername // => 'username'
+req.decodedToken // => { iss: "jsmith", exp: 1318874398806 }
 ```
+
+The *iss* field is the username, and the *exp* field is the expiration date, expressed as the number of 
+milliseconds since the Unix Epoch, just like `Date#valueOf`.
 
 ### The authenticator
 

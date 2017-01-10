@@ -36,16 +36,16 @@ test("HTTPHeaderCheck - accepts valid user token", function (assert) {
 	headerCheck(req, res, next);
 });
 
-test("HTTPHeaderCheck - sets auth username in req", function (assert) {
-  var USERNAME = "test_username";
+test("HTTPHeaderCheck - sets decoded token req", function (assert) {
+  var decodedToken = { iss: "test_username", exp: 1318874398806 };
+
   var userCheck = function () {
-    return new Promise(function (resolve) {
-      resolve({iss: USERNAME});
-    });
+    return new Promise(function (resolve) { resolve(decodedToken); });
   };
   var headerCheck = HTTPHeaderCheck(null, userCheck, mockLog);
   var next = function () {
-    assert.equal(req.authUsername, USERNAME, "The username from JWT");
+    assert.notOk(req.authUsername, "Remove this ugly feature");
+    assert.deepEqual(req.decodedToken, decodedToken, "The decoded JWT token");
     assert.end();
   };
   headerCheck(req, res, next);
