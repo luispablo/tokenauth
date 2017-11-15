@@ -126,6 +126,16 @@ where _Group1_ and _TeamA_ are the only groups allowed to access, the only ones 
 
 The **authenticator** object has to provide a **groups** function that responds an ES6 promise, and resolves an array of group names. If any of the user groups is in the provided group list, the JWT will be created.
 
+## Secure routes with username + password instead of the JWT
+
+If you need to guard a route with the username and the password instead of the JWT (i.e.: ask the password again for a sensitive operation) you can secure the route with a special middleware instead of the default JWT one:
+
+```javascript
+router.get("/sensitiveResource/:id", routes.validateCredentials, sensitiveResource.getById);
+```
+
+This middleware expects the username in a HTTP header called **x-credentials-username**, and the password in another called **x-credentials-password**.
+
 # Fetching authenticated data from client
 
 We also have a helper for your authenticated HTTP fetching, like so:

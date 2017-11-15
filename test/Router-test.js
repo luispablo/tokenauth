@@ -167,6 +167,41 @@ test("Router - Validate expired token", function (assert) {
 	expiredRoutes.createToken()(reqMock, resMock);
 });
 
+test("Router - validateCredentials - correct username and password in HTTP header", function (assert) {
+  assert.plan(1);
+  const req = {
+    headers: { "x-credentials-username": USERNAME, "x-credentials-password": PASSWORD }
+  };
+  const next = function () { assert.pass("Next invoked"); };
+  routes.validateCredentials(req, null, next);
+});
+
+test("Router - validateCredentials - no username or password in HTTP header", function (assert) {
+  assert.plan(1);
+  const req = { headers: {} };
+  const res = {
+    status (code) {
+      assert.equal(code, 422, "The request is invalid");
+      return { end () {} };
+    }
+  };
+  routes.validateCredentials(req, res);
+});
+
+test("Router - validateCredentials - incorrect password in HTTP header", function (assert) {
+  assert.plan(1);
+  const req = {
+    headers: { "x-credentials-username": "wronguser", "x-credentials-password": "wrongpass" }
+  };
+  const res = {
+    status (code) {
+      assert.equal(code, 401, "HTTP Unauthorized");
+      return { end () {} };
+    }
+  };
+  routes.validateCredentials(req, res);
+});
+
 test("Router - delete token", function (assert) {
 	reqMock.body.username = USERNAME;
 	reqMock.body.password = PASSWORD;
