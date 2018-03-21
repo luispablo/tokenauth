@@ -155,6 +155,37 @@ authFetch("api/users").then(res => {
 
 This works as the new **window.fetch** that we have now (see https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
 
+## Using app ID + token instead of user credentials
+
+If you want to issue and authenticated fetch from another program, instead of a JWT created through user credentials, you can use the static application ID + token provided in the init config.
+If you set it to:
+
+```javascript
+var properties = {
+	secret: "asdjfasdf7fta9sd6f7asdfy7698698asd6faqhkjewr", // very long random string
+	staticKeys: {
+		"MOBILE_APP": "añlkajsdfkaaa66797987080adaaaeer33",
+		"INTERNAL_APP": "hhklkiokjr878778fdjn3nn3nmn333jkkjlñ"
+	}
+};
+```
+
+then you can use it like this:
+
+```javascript
+var AuthFetch = require("tokenauth").AuthFetch;
+
+// and say you already have a jwt object
+// then you can do:
+var authFetch = AuthFetch({ appId: "MOBILE_APP", token: "añlkajsdfkaaa66797987080adaaaeer33" });
+
+// and then
+authFetch("api/users").then(res => {
+	// your magic here...
+});
+
+```
+
 ## Multipart/Form-Data
 
 If you're submiting a form POST or PUT with multipart content, you must add a
