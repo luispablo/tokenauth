@@ -10,15 +10,15 @@ var AuthFetch = require("./lib/AuthFetch");
 var consoleLogger = MultiLog([{name: "console", level: "ERROR"}]);
 
 var tokenauth = function (config, logger) {
-	var log = logger || consoleLogger;
-	var validTokens = [];
-	var appCheck = AppCheck(config.staticKeys, log);
-	var userCheck = UserCheck(validTokens, config.secret, log);
+  var log = logger || consoleLogger;
+  var validTokens = [];
+  var appCheck = AppCheck(config.staticKeys, log);
+  var userCheck = UserCheck(validTokens, config.token.secret, log);
 
-	return {
-		Middleware: HTTPHeaderCheck(appCheck, userCheck, log),
-		Router: Router(validTokens)
-	};
+  return {
+    Middleware: HTTPHeaderCheck(appCheck, userCheck, log),
+    Router: Router(validTokens)
+  };
 };
 
 tokenauth.AuthFetch = AuthFetch;
