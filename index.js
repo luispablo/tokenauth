@@ -13,7 +13,7 @@ var tokenauth = function (config, logger) {
   var log = logger || consoleLogger;
   var validTokens = [];
   var appCheck = AppCheck(config.staticKeys, log);
-  var userCheck = UserCheck(validTokens, config.token.secret, log);
+  var userCheck = UserCheck(validTokens, config.token && config.token.secret, log);
 
   return {
     Middleware: HTTPHeaderCheck(appCheck, userCheck, log),
