@@ -17,7 +17,7 @@ var tokenauth = function (config, logger) {
 
   return {
     Middleware: HTTPHeaderCheck(appCheck, userCheck, log),
-    Router: Router(validTokens)
+    Router: Router(validTokens, config.roles)
   };
 };
 

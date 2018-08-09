@@ -32,7 +32,36 @@ var buildResMock = function () {
 var resMock = buildResMock();
 var validTokens = [];
 
-var routes = Router(validTokens)(authenticatorMock, SECRET, VALIDITY_DAYS, mockLog);
+const roles = {
+  "role1": { groups: ["group1", "group2"] },
+  "role2": { groups: ["group2", "group3"] },
+  "role3": { users: [USERNAME, "user2"] },
+  "role4": { users: ["user2", "user3"] },
+  "role5": { groups: ["group1", "group2"], users: ["user2", "user3"] },
+  "role6": { groups: ["group2", "group3"], users: [USERNAME, "user2"] }
+};
+
+var routes = Router(validTokens, roles)(authenticatorMock, SECRET, VALIDITY_DAYS, mockLog);
+
+test("Router - Computed roles in token", function (assert) {
+  reqMock.body.username = USERNAME;
+  reqMock.body.password = PASSWORD;
+  const auth = {
+    authenticate: function () {
+      return new Promise(function (resolve) { resolve({ groups: ["group3", "group4"] }); });
+    }
+  };
+
+  assert.plan(3);
+  
+  resMock.json = function (object) {
+    const user = object.user;
+    assert.ok(user.roles, "The roles are there");
+    assert.equal(user.roles.length, 3, "Has 3 roles");
+    assert.deepEqual(user.roles, ["role2", "role3", "role6"], "Has this 3 given roles");
+  };
+  Router(validTokens, roles)(auth, SECRET, VALIDITY_DAYS, mockLog).createToken()(reqMock, resMock);
+});
 
 test("Router - is logging", function (assert) {
   reqMock.body = {};
@@ -58,23 +87,6 @@ test("Router - Create token", function (assert) {
   };
 
   routes.createToken()(reqMock, resMock);
-});
-
-test("Router - Additional data in token", function (assert) {
-  assert.plan(3);
-  var additionalData = { field1: "value1", field2: "value2" };
-  var additionalDataAuth = {
-    authenticate: function () {
-      return new Promise(function (resolve) { resolve(additionalData); });
-    }
-  };
-  resMock.json = function (object) {
-    assert.equal(object.user.username, "username", "The username is still there");
-    assert.equal(object.user.field1, additionalData.field1, "First additional data field");
-    assert.equal(object.user.field2, additionalData.field2, "Second additional data field");
-  };
-  var routesAdditionalData = Router(validTokens)(additionalDataAuth, SECRET, VALIDITY_DAYS, mockLog);
-  routesAdditionalData.createToken()(reqMock, resMock);
 });
 
 test("Router - Unauthorized create token", function (assert) {

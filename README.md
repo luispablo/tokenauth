@@ -9,13 +9,26 @@ Simple express.js middleware to use a token for API authentication.
 
 You must supply a JSON object with the following configuration:
 
+
 ```javascript
 var properties = {
-	secret: "asdjfasdf7fta9sd6f7asdfy7698698asd6faqhkjewr", // very long random string
-	staticKeys: {
-		"MOBILE_APP": "añlkajsdfkaaa66797987080adaaaeer33",
-		"INTERNAL_APP": "hhklkiokjr878778fdjn3nn3nmn333jkkjlñ"
-	}
+  token: {
+    secret: "asdjfasdf7fta9sd6f7asdfy7698698asd6faqhkjewr",
+    validDays: 90
+  },
+  staticKeys: {
+    "MOBILE_APP": "añlkajsdfkaaa66797987080adaaaeer33",
+    "INTERNAL_APP": "hhklkiokjr878778fdjn3nn3nmn333jkkjlñ"
+  },
+  roles: {
+    "role_name_1": {
+      groups: ["GROUP_NAME_1", "GROUP_NAME_2"],
+      users: ["username1", "username2"]
+    },
+    "role_name_2": {
+      groups: ["GROUP_NAME_1"]
+    }
+  }
 };
 
 // Build the ExpressJS middleware
@@ -54,6 +67,22 @@ app.delete("/api/auth/token", routes.deleteToken); // Removes JWT from local sto
 ```
 
 and that's it.
+
+The POST route that creates a new JWT, returns an object as such:
+
+```JSON
+{
+  "token": <<jwt>>,
+  "expires": 229919339883,
+  "user": { 
+    "username": "the-username",
+    "roles": ["role-name-1", "role-name-2"],
+    // Whaever else info authenticator returns...
+  }
+}
+```
+
+The **roles** property of the user object contains the computed roles for the user, from its username and groups.
 
 ## Middleware auth data provided
 
@@ -102,6 +131,27 @@ authenticate: function (username, password) {
 	};
 }
 ```
+
+#### Authenticator + roles
+
+If you want tokenauth to give you computed roles for the authenticated user inside the jwt, the authenticator has to return, inside the additional data, a property named ```groups```, with an array of strings representing the group names in it.
+
+The roles computation will search the ```roles``` property in tokenauth config, searching the ```users``` array of each role for the authenticated username **and** the ```groups``` array of each role too, to see if any of the auhtenticated user groups are there.
+
+From such intersection tokenauth will build a ```roles``` array, inside the ```user``` property of the JWT, with a string for each role asigned.
+
+```json
+// JWT
+{
+  ...
+  "user": {
+    ...
+    "roles": ["role2", "role3", "role6"]
+    ...
+  }
+}
+```
+
 
 ## One additional step: authorization
 
