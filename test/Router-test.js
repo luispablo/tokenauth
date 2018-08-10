@@ -19,6 +19,9 @@ var authenticatorMock = {
 var mockLog = { debug: function (msg) { this.lastMessage = msg; } };
 var reqMock = {body: {}};
 
+const defaultReq = { body: { username: USERNAME, password: PASSWORD } };
+const authOKEmpty = { authenticate: function () { return new Promise(function (resolve) { resolve({ }); }); } };
+
 var buildResMock = function () {
   return {
     status: function (code) { this.statusCode = code; return this; },
@@ -44,8 +47,6 @@ const roles = {
 var routes = Router(validTokens, roles)(authenticatorMock, SECRET, VALIDITY_DAYS, mockLog);
 
 test("Router - Computed roles in token", function (assert) {
-  reqMock.body.username = USERNAME;
-  reqMock.body.password = PASSWORD;
   const auth = {
     authenticate: function () {
       return new Promise(function (resolve) { resolve({ groups: ["group3", "group4"] }); });
@@ -60,7 +61,7 @@ test("Router - Computed roles in token", function (assert) {
     assert.equal(user.roles.length, 3, "Has 3 roles");
     assert.deepEqual(user.roles, ["role2", "role3", "role6"], "Has this 3 given roles");
   };
-  Router(validTokens, roles)(auth, SECRET, VALIDITY_DAYS, mockLog).createToken()(reqMock, resMock);
+  Router(validTokens, roles)(auth, SECRET, VALIDITY_DAYS, mockLog).createToken(defaultReq, resMock);
 });
 
 test("Router - is logging", function (assert) {
@@ -72,50 +73,43 @@ test("Router - is logging", function (assert) {
     return this;
   };
 
-  routes.createToken()(reqMock, resMock);
+  routes.createToken(reqMock, resMock);
 });
 
 test("Router - Create token", function (assert) {
-  reqMock.body.username = USERNAME;
-  reqMock.body.password = PASSWORD;
-
   assert.plan(2);
-
   resMock.json = function (object) {
     assert.ok(object.token, "Exists the token property");
     assert.equal(object.user.username, USERNAME, "Token built for the username provided");
   };
-
-  routes.createToken()(reqMock, resMock);
+  routes.createToken(defaultReq, resMock);
 });
 
 test("Router - Unauthorized create token", function (assert) {
   assert.plan(1);
-  reqMock.body = { username: USERNAME, password: PASSWORD };
+  reqMock.body = { username: "another_user", password: PASSWORD };
   authenticatorMock.groups = function () { return new Promise(function (resolve) { resolve(["Group1", "TeamA"]); }); };
   resMock.json = function () {};
-  resMock.status = function (code) { assert.equal(code, 403, "HTTP unauthorized"); return this; };
-  routes.createToken(["Group2", "TeamB"])(reqMock, resMock);
+  resMock.status = function (code) { assert.equal(code, 401, "HTTP not authenticated"); return this; };
+  Router(validTokens, roles)(authenticatorMock, SECRET, VALIDITY_DAYS, mockLog).createToken(reqMock, resMock);
 });
 
 test("Router - Authorized create token", function (assert) {
   assert.plan(1);
   reqMock.body = { username: USERNAME, password: PASSWORD };
-  authenticatorMock.groups = function () { return new Promise(function (resolve) { resolve(["Group1", "TeamA"]); }); };
+  authenticatorMock.groups = function () { return new Promise(function (resolve) { resolve(["group1", "TeamA"]); }); };
   resMock.json = function (object) { assert.ok(object.token, "Exists the token property"); };
-  routes.createToken(["Group2", "TeamA"])(reqMock, resMock);
+  Router(validTokens, roles)(authenticatorMock, SECRET, VALIDITY_DAYS, mockLog).createToken(reqMock, resMock);
 });
 
 test("Router - No username or no password", function (assert) {
   reqMock.body = {};
-
   assert.plan(1);
   resMock.status = function (code) {
     assert.equal(code, 422, "HTTP error 422 because of missing credentials");
     return this;
   };
-
-  routes.createToken()(reqMock, resMock);
+  routes.createToken(reqMock, resMock);
 });
 
 test("Router - Invalid username or password", function (assert) {
@@ -124,13 +118,29 @@ test("Router - Invalid username or password", function (assert) {
   reqMock.body.password = "invalid";
 
   assert.plan(1);
-
   resMock.status = function (code) {
     assert.equal(code, 401, "HTTP error 401: unauthorized");
     return this;
   };
+  routes.createToken(reqMock, resMock);
+});
 
-  routes.createToken()(reqMock, resMock);
+test("Router - Free access when no roles specified", function (assert) {
+  reqMock.body.username = USERNAME;
+  reqMock.body.password = PASSWORD;
+  assert.plan(1);
+  const res = { 
+    status (status) { assert.equal(200, status, "If called, should be 200"); }, 
+    json () { assert.ok("Everything is fine here"); } 
+  };
+  Router([])(authOKEmpty, SECRET, VALIDITY_DAYS, mockLog).createToken(reqMock, res);
+});
+
+test("Router - Default role assigned", function (assert) {
+  const roles = { "default-role": { defaultRole: true } };
+  assert.plan(1);
+  const res = { json (token) { assert.deepEqual(token.user.roles, ["default-role"], "Default role assigned"); }};
+  Router([], roles)(authOKEmpty, SECRET, VALIDITY_DAYS, mockLog).createToken(defaultReq, res);
 });
 
 test("Router - Validate existing & valid token", function (assert) {
@@ -147,7 +157,7 @@ test("Router - Validate existing & valid token", function (assert) {
     routes.validateToken(reqMock, resMock);
   };
 
-  routes.createToken()(reqMock, resMock);
+  routes.createToken(reqMock, resMock);
 });
 
 test("Router - Validate non-existent token", function (assert) {
@@ -176,7 +186,7 @@ test("Router - Validate expired token", function (assert) {
     expiredRoutes.validateToken(reqMock, resMock);
   };
 
-  expiredRoutes.createToken()(reqMock, resMock);
+  expiredRoutes.createToken(reqMock, resMock);
 });
 
 test("Router - validateCredentials - correct username and password in HTTP header", function (assert) {
@@ -233,5 +243,5 @@ test("Router - delete token", function (assert) {
     };
     routes.deleteToken(reqMock, deleteResMock);
   };
-  routes.createToken()(reqMock, deleteResMock);
+  routes.createToken(reqMock, deleteResMock);
 });

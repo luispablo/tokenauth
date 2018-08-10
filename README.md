@@ -21,6 +21,7 @@ var properties = {
     "INTERNAL_APP": "hhklkiokjr878778fdjn3nn3nmn333jkkjlñ"
   },
   roles: {
+    "role_default": { defaultRole: true },
     "role_name_1": {
       groups: ["GROUP_NAME_1", "GROUP_NAME_2"],
       users: ["username1", "username2"]
@@ -61,7 +62,7 @@ var app = express();
 
 ...
 
-app.post("/api/auth/token", routes.createToken()); // Creates new JSON web taken with username / password authentication
+app.post("/api/auth/token", routes.createToken); // Creates new JSON web taken with username / password authentication
 app.get("/api/auth/validate_token", routes.validateToken); // Validate if a given JWT exists and is not expired
 app.delete("/api/auth/token", routes.deleteToken); // Removes JWT from local storage
 ```
@@ -132,13 +133,58 @@ authenticate: function (username, password) {
 }
 ```
 
-#### Authenticator + roles
+## Authorization
 
-If you want tokenauth to give you computed roles for the authenticated user inside the jwt, the authenticator has to return, inside the additional data, a property named ```groups```, with an array of strings representing the group names in it.
+Inside the configuration you have an optional parameter named ```roles``` which rules the authorization part of the library.
 
-The roles computation will search the ```roles``` property in tokenauth config, searching the ```users``` array of each role for the authenticated username **and** the ```groups``` array of each role too, to see if any of the auhtenticated user groups are there.
+```json
+  ...
+  roles: {
+    "role_default": { defaultRole: true },
+    "role_name_1": {
+      groups: ["GROUP_NAME_1", "GROUP_NAME_2"],
+      users: ["username1", "username2"]
+    },
+    "role_name_2": {
+      groups: ["GROUP_NAME_1"]
+    }
+  }
+  ...
+```
 
-From such intersection tokenauth will build a ```roles``` array, inside the ```user``` property of the JWT, with a string for each role asigned.
+If you omit this item in your settings, everyone with a user and password will be able to create a JWT and no further check will be performed. If you include it, tokenauth will give you computed roles for the authenticated user inside the JWT.
+
+You can include a **default** role, to be given to anyone with a user and password. To state that a role is default set its ```defaultRole``` property to **true**.
+
+```json
+    ...
+    "role_default": { defaultRole: true },
+    ...
+```
+
+Going further, when you want to assign roles to specific users, set to such roles a ```users``` property, with a string array of usernames.
+
+```json
+    ...
+    "role_name_3": {
+      users: ["username1", "username2"]
+    },
+    ...
+```
+
+Furthermore, if you want to assing the roles based on groups from your authenticator, it has to return, inside the additional data, a property named ```groups```, with an array of strings representing the group names in it.
+
+The roles computation will search the ```roles``` property in tokenauth config to see if any of the auhtenticated user groups are there.
+
+```json
+    ...
+    "role_name_2": {
+      groups: ["GROUP_NAME_1"]
+    }
+    ...
+```
+
+The final computed ```roles``` property will look like this:
 
 ```json
 // JWT
@@ -152,29 +198,7 @@ From such intersection tokenauth will build a ```roles``` array, inside the ```u
 }
 ```
 
-
-## One additional step: authorization
-
-If you want to restrict which users can get a JSON web token, you can provide the groups allowed to do so to the router thats handles the POSTing to request such new JWTs.
-So going back to the last example, instead of just doing:
-
-```javascript
-	app.post("/api/auth/token", routes.createToken());
-```
-
-you can do
-
-```javascript
-	app.post("/api/auth/token", routes.createToken("Group1", "TeamA"));
-```
-
-where _Group1_ and _TeamA_ are the only groups allowed to access, the only ones with permission to create new JSON web tokens. So, going back to our example, when building the router you did:
-
-```javascript
-	var routes = tokenauth.Router(authenticator, secret, validDays, log);
-```
-
-The **authenticator** object has to provide a **groups** function that responds an ES6 promise, and resolves an array of group names. If any of the user groups is in the provided group list, the JWT will be created.
+**IMPORTANT NOTE**: If you include the ```roles``` property in your configuration, _without_ a default role, the users that aren't included in any role won't be able to authenticate.
 
 ## Secure routes with username + password instead of the JWT
 
