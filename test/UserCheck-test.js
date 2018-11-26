@@ -1,16 +1,17 @@
 var test = require("tape");
 var jwt = require("jwt-simple");
 var UserCheck = require("../lib/UserCheck");
-var moment = require("moment");
+const addDays = require("date-fns/add_days");
+const subDays = require("date-fns/sub_days");
 
 var SECRET = "secret";
 var USERNAME_1 = "username1";
 var USERNAME_2 = "username2";
 
-var inSevenDays = moment().add(7, 'days').valueOf();
-var DECODED_TOKEN_1 = {iss: USERNAME_1, exp: inSevenDays};
+var exp = addDays(new Date(), 7).getTime() / 1000; // 7 days from today
+var DECODED_TOKEN_1 = {iss: USERNAME_1, exp };
 var TOKEN_1 = jwt.encode(DECODED_TOKEN_1, SECRET);
-var TOKEN_2 = jwt.encode({iss: USERNAME_2, exp: inSevenDays}, SECRET);
+var TOKEN_2 = jwt.encode({iss: USERNAME_2, exp }, SECRET);
 var INVALID_TOKEN = "invalid_token";
 
 var mockLog = { debug: function (msg) { this.lastMessge = msg; } };
@@ -36,14 +37,14 @@ test("UserCheck - invalid token", function (assert) {
 test("UserCheck - expired token", function (assert) {
 	assert.plan(1);
 
-	var yesterday = moment().subtract(1, "days").valueOf();
-	var expiredToken = jwt.encode({iss: USERNAME_1, exp: yesterday}, SECRET);
+  const yesterdayInSeconds = subDays(new Date(), 1).getTime() / 1000;
+	var expiredToken = jwt.encode({ sub: USERNAME_1, exp: yesterdayInSeconds }, SECRET);
 	var expiredCheck = UserCheck([expiredToken], SECRET, mockLog);
 
 	expiredCheck(expiredToken).then(function () {
 		assert.fail("Should have failed");
 	}).catch(function (error) {
-		assert.equal(error.message, "Access token has expired", "Token expired message");
+		assert.equal(error.message, "Token expired", "Token expired message");
 	})
 });
 

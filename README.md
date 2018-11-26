@@ -1,17 +1,14 @@
 # tokenauth
-Simple express.js middleware to use a token for API authentication.
+express.js middleware to implement JWT auth.
 
-**News in 2.1.0 version: added support for Node 0.10**
+**This module uses [jwt-simple](https://www.npmjs.com/package/jwt-simple) to create / encode and decode JWTs**
 
-**It's meant to use combined with jwt-simple (https://www.npmjs.com/package/jwt-simple)**
+# Auth middleware for Express JS
 
-# Authentication / authorization middleware for Express JS
-
-You must supply a JSON object with the following configuration:
-
+The settings are provided through JSON.
 
 ```javascript
-var properties = {
+const properties = {
   token: {
     secret: "asdjfasdf7fta9sd6f7asdfy7698698asd6faqhkjewr",
     validDays: 90
@@ -33,7 +30,7 @@ var properties = {
 };
 
 // Build the ExpressJS middleware
-var authMiddleware = require("tokenauth")(properties).Middleware;
+const authMiddleware = require("tokenauth")(properties).Middleware;
 
 // now you can do:
 app.use("api/users", authMiddleware, require("routers/users"));
@@ -41,28 +38,28 @@ app.use("api/users", authMiddleware, require("routers/users"));
 
 # Router
 
-This helper object has already built-in the basic routes for handling the JSON web token management.
+tokenauth provides an Express router to create, validate an destroy the JWTs.
 
 ```javascript
-var logger = ... // this param is optional, but you can use something similar to @luispablo/multilog (https://www.npmjs.com/package/@luispablo/multilog)
+const logger = ... // this param is optional, but you can use something similar to @luispablo/multilog (https://www.npmjs.com/package/@luispablo/multilog)
 
-var tokenauth = require("tokenauth")(properties, logger);
+const tokenauth = require("tokenauth")(properties, logger);
 
-var authenticator = ... // an object with an authenticate(user, pass) method, handling es6 promises, like 'ws-credentials'
-var secret = "añkldjfañsdfa718749823u4h12jh4ñ123"; // to encode / decode the token
-var validDays = 7; // how many days you want to keep the tokens valid, no limit
-var routes = tokenauth.Router(authenticator, secret, validDays, log); // The log params is optional, defaults to console
+const authenticator = ... // an object with an authenticate(user, pass) function, with a thenable response
+const secret = "añkldjfañsdfa718749823u4h12jh4ñ123"; // to encode / decode the token
+const validDays = 7; // how many days you want to keep the tokens valid, no limit
+const routes = tokenauth.Router(authenticator, secret, validDays, log); // The log params is optional, defaults to console
 ```
 
 and when you define the Express JS routes do something like:
 
 ```javascript
-var express = require("express");
-var app = express();
+const express = require("express");
+const app = express();
 
 ...
 
-app.post("/api/auth/token", routes.createToken); // Creates new JSON web taken with username / password authentication
+app.post("/api/auth/token", routes.createToken); // Creates new JWT with username / password authentication
 app.get("/api/auth/validate_token", routes.validateToken); // Validate if a given JWT exists and is not expired
 app.delete("/api/auth/token", routes.deleteToken); // Removes JWT from local storage
 ```
@@ -90,47 +87,44 @@ The **roles** property of the user object contains the computed roles for the us
 Tokenauth leaves the decoded token info in the request.
 
 ```javascript
-req.decodedToken // => { iss: "jsmith", exp: 1318874398806 }
+req.decodedToken // => { "sub": "jsmith", "exp": 1318874398806 }
 ```
 
-The *iss* field is the username, and the *exp* field is the expiration date, expressed as the number of 
-milliseconds since the Unix Epoch, just like `Date#valueOf`.
+The **sub** (Subject) and **exp** (Expiration Time) fields are set as defined in the standard about JSON Web Tokens from the IETF: [RFC 7519](https://www.rfc-editor.org/rfc/rfc7519.txt).
+
+The **username** provided is set as the Subject field.
 
 ### The authenticator
 
 In the previous section you saw the following:
 
 ```javascript
-var authenticator = ... // an object with an authenticate(user, pass) method, handling es6 promises, like 'ws-credentials'
+const authenticator = ... // an object with an authenticate(user, pass) function, with a thenable response
 ```
 
 this is expecting an object with a function like this:
 
 ```javascript
-authenticate: function (username, password) {
-	return new Promise(function (resolve, reject) {
-		if ( /* ¿authenticated? */) {
-			resolve();
-		} else {
-			reject();
-		}
-	};
-}
+authenticate: (username, password) => new Promise((resolve, reject) => {
+  if ( /* ¿authenticated? */) {
+    resolve();
+  } else {
+    reject();
+  }
+})
 ```
 
-by default token auth will put the **username** and the **expires** timestamp in
-the JWT. If you want to include other fields, include them in the resolve, like so:
+by default token auth will put the **sub** (Subject, the username) and the **exp** (Expiration Time) timestamp in
+the JWT claim set. If you want to include other fields, include them in the resolve, like so:
 
 ```javascript
-authenticate: function (username, password) {
-	return new Promise(function (resolve, reject) {
-		if ( /* ¿authenticated? */) {
-			resolve({name: "Richard", lastname: "Nixon", age: 57});
-		} else {
-			reject();
-		}
-	};
-}
+authenticate: (username, password) => new Promise((resolve, reject) => {
+  if ( /* ¿authenticated? */) {
+    resolve({ name: "Richard", lastname: "Nix", age: 57 });
+  } else {
+    reject();
+  }
+})
 ```
 
 ## Authorization
