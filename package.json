@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/luispablo/tokenauth#readme",
   "devDependencies": {
+    "faucet": "0.0.1",
     "tape": "^4.5.1"
   },
   "dependencies": {
