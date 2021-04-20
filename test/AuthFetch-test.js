@@ -6,12 +6,12 @@ var jwtMock = { token: TOKEN };
 var body = { name: "test name", lastname: "test lastname" };
 
 test("AuthFetch - Sets authentication header from JWT", function (assert) {
-	assert.plan(1);
-	var fetchMock = function (URL, options) {
-		assert.is(options.headers["x-access-token"], TOKEN, "Sets the token in HTTP header");
-	};
-	var authFetch = AuthFetch(jwtMock, fetchMock);
-	authFetch("random URL");
+  assert.plan(1);
+  var fetchMock = function (URL, options) {
+    assert.is(options.headers["x-access-token"], TOKEN, "Sets the token in HTTP header");
+  };
+  var authFetch = AuthFetch(jwtMock, fetchMock);
+  authFetch("random URL");
 });
 
 test("AuthFetch - Sets authentication header for static app ID + token", function (assert) {
@@ -27,39 +27,39 @@ test("AuthFetch - Sets authentication header for static app ID + token", functio
 });
 
 test("AuthFetch - Prevent Content-Type and JSON.stringify with multipart: true", function (assert) {
-	assert.plan(2);
-	var fetchMock = function (URL, options) {
-		assert.falsy(options.headers["Content-Type"], "This shouldn't be set");
-		assert.not(typeof(options.body), "string", "The body shouldn't be stringified");
-	};
-	var authFetch = AuthFetch(jwtMock, fetchMock);
-	authFetch("/someurl", { body: { id: 1 }, multipart: true });
+  assert.plan(2);
+  var fetchMock = function (URL, options) {
+    assert.falsy(options.headers["Content-Type"], "This shouldn't be set");
+    assert.not(typeof(options.body), "string", "The body shouldn't be stringified");
+  };
+  var authFetch = AuthFetch(jwtMock, fetchMock);
+  authFetch("/someurl", { body: { id: 1 }, multipart: true });
 });
 
 test("AuthFetch - Accepts JSON and content type JSON", function (assert) {
-	assert.plan(2);
-	var fetchMock = function (URL, options) {
-		assert.is(options.headers["Accept"], "application/json", "HTTP header accepts JSON");
-		assert.is(options.headers["Content-Type"], "application/json", "HTTP header content type JSON");
-	};
-	var authFetch = AuthFetch(jwtMock, fetchMock);
-	authFetch("random URL");
+  assert.plan(2);
+  var fetchMock = function (URL, options) {
+    assert.is(options.headers["Accept"], "application/json", "HTTP header accepts JSON");
+    assert.is(options.headers["Content-Type"], "application/json", "HTTP header content type JSON");
+  };
+  var authFetch = AuthFetch(jwtMock, fetchMock);
+  authFetch("random URL");
 });
 
 test("AuthFetch - Stringifies the body if it's not", function (assert) {
-	assert.plan(1);
-	var fetchMock = function (URL, options) {
-		assert.is(options.body, JSON.stringify(body), "The body is stringified");
-	};
-	var authFetch = AuthFetch(jwtMock, fetchMock);
-	authFetch("random URL", { method: "PUT", body: body });
+  assert.plan(1);
+  var fetchMock = function (URL, options) {
+    assert.is(options.body, JSON.stringify(body), "The body is stringified");
+  };
+  var authFetch = AuthFetch(jwtMock, fetchMock);
+  authFetch("random URL", { method: "PUT", body: body });
 });
 
 test("AuthFetch - Leaves the body as is if it's already stringified", function (assert) {
-	assert.plan(1);
-	var fetchMock = function (URL, options) {
-		assert.is(options.body, JSON.stringify(body), "The body is stringified");
-	};
-	var authFetch = AuthFetch(jwtMock, fetchMock);
-	authFetch("random URL", { method: "PUT", body: JSON.stringify(body) });
+  assert.plan(1);
+  var fetchMock = function (URL, options) {
+    assert.is(options.body, JSON.stringify(body), "The body is stringified");
+  };
+  var authFetch = AuthFetch(jwtMock, fetchMock);
+  authFetch("random URL", { method: "PUT", body: JSON.stringify(body) });
 });

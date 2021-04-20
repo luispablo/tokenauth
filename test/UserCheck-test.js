@@ -18,55 +18,55 @@ var mockLog = { debug: function (msg) { this.lastMessge = msg; } };
 var check = UserCheck([TOKEN_1, TOKEN_2], SECRET, mockLog);
 
 test.cb("UserCheck - is logging", function (assert) {
-	check(INVALID_TOKEN).catch(function () {
-		assert.is(mockLog.lastMessge, "Invalid token", "Logged debug message");
-		assert.end();
-	});
+  check(INVALID_TOKEN).catch(function () {
+    assert.is(mockLog.lastMessge, "Invalid token", "Logged debug message");
+    assert.end();
+  });
 });
 
 test.serial("UserCheck - invalid token", async function (assert) {
-	assert.plan(1);
+  assert.plan(1);
 
-	check(INVALID_TOKEN).then(function () {
-		assert.fail("Should have failed");
-	}).catch(function (error) {
-		assert.is(error.message, "Invalid token", "Invalid token message");
-	});
+  check(INVALID_TOKEN).then(function () {
+    assert.fail("Should have failed");
+  }).catch(function (error) {
+    assert.is(error.message, "Invalid token", "Invalid token message");
+  });
 });
 
 test.serial("UserCheck - expired token", async function (assert) {
-	assert.plan(1);
+  assert.plan(1);
 
   const yesterdayInSeconds = subDays(new Date(), 1).getTime() / 1000;
-	var expiredToken = jwt.encode({ sub: USERNAME_1, exp: yesterdayInSeconds }, SECRET);
-	var expiredCheck = UserCheck([expiredToken], SECRET, mockLog);
+  var expiredToken = jwt.encode({ sub: USERNAME_1, exp: yesterdayInSeconds }, SECRET);
+  var expiredCheck = UserCheck([expiredToken], SECRET, mockLog);
 
-	expiredCheck(expiredToken).then(function () {
-		assert.fail("Should have failed");
-	}).catch(function (error) {
-		assert.is(error.message, "Token expired", "Token expired message");
-	})
+  expiredCheck(expiredToken).then(function () {
+    assert.fail("Should have failed");
+  }).catch(function (error) {
+    assert.is(error.message, "Token expired", "Token expired message");
+  })
 });
 
 test.serial("UserCheck - no valid tokens", async function (assert) {
-	assert.plan(1);
-	var emptyCheck = UserCheck([], SECRET, mockLog);
+  assert.plan(1);
+  var emptyCheck = UserCheck([], SECRET, mockLog);
 
-	emptyCheck(TOKEN_1).then(function () {
-		assert.fail("Should have failed");
-	}).catch(function (error) {
-		assert.is(error.message, "Invalid token", "Invalid token message");
-	});
+  emptyCheck(TOKEN_1).then(function () {
+    assert.fail("Should have failed");
+  }).catch(function (error) {
+    assert.is(error.message, "Invalid token", "Invalid token message");
+  });
 });
 
 test.serial("UserCheck - valid token", async function (assert) {
-	assert.plan(1);
+  assert.plan(1);
 
-	check(TOKEN_1).then(function () {
-		assert.pass("Token valid");
-	}).catch(function (error) {
-		assert.fail(error.message);
-	});
+  check(TOKEN_1).then(function () {
+    assert.pass("Token valid");
+  }).catch(function (error) {
+    assert.fail(error.message);
+  });
 });
 
 test.cb("UserCheck - resolve with decoded token", function (assert) {
