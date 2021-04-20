@@ -1,4 +1,4 @@
-var test = require("tape");
+var test = require("ava");
 var jwt = require("jwt-simple");
 var UserCheck = require("../lib/UserCheck");
 const addDays = require("date-fns/add_days");
@@ -17,24 +17,24 @@ var INVALID_TOKEN = "invalid_token";
 var mockLog = { debug: function (msg) { this.lastMessge = msg; } };
 var check = UserCheck([TOKEN_1, TOKEN_2], SECRET, mockLog);
 
-test("UserCheck - is logging", function (assert) {
+test.cb("UserCheck - is logging", function (assert) {
 	check(INVALID_TOKEN).catch(function () {
-		assert.equal(mockLog.lastMessge, "Invalid token", "Logged debug message");
+		assert.is(mockLog.lastMessge, "Invalid token", "Logged debug message");
 		assert.end();
 	});
 });
 
-test("UserCheck - invalid token", function (assert) {
+test.serial("UserCheck - invalid token", async function (assert) {
 	assert.plan(1);
 
 	check(INVALID_TOKEN).then(function () {
 		assert.fail("Should have failed");
 	}).catch(function (error) {
-		assert.equal(error.message, "Invalid token", "Invalid token message");
+		assert.is(error.message, "Invalid token", "Invalid token message");
 	});
 });
 
-test("UserCheck - expired token", function (assert) {
+test.serial("UserCheck - expired token", async function (assert) {
 	assert.plan(1);
 
   const yesterdayInSeconds = subDays(new Date(), 1).getTime() / 1000;
@@ -44,22 +44,22 @@ test("UserCheck - expired token", function (assert) {
 	expiredCheck(expiredToken).then(function () {
 		assert.fail("Should have failed");
 	}).catch(function (error) {
-		assert.equal(error.message, "Token expired", "Token expired message");
+		assert.is(error.message, "Token expired", "Token expired message");
 	})
 });
 
-test("UserCheck - no valid tokens", function (assert) {
+test.serial("UserCheck - no valid tokens", async function (assert) {
 	assert.plan(1);
 	var emptyCheck = UserCheck([], SECRET, mockLog);
 
 	emptyCheck(TOKEN_1).then(function () {
 		assert.fail("Should have failed");
 	}).catch(function (error) {
-		assert.equal(error.message, "Invalid token", "Invalid token message");
+		assert.is(error.message, "Invalid token", "Invalid token message");
 	});
 });
 
-test("UserCheck - valid token", function (assert) {
+test.serial("UserCheck - valid token", async function (assert) {
 	assert.plan(1);
 
 	check(TOKEN_1).then(function () {
@@ -69,7 +69,7 @@ test("UserCheck - valid token", function (assert) {
 	});
 });
 
-test("UserCheck - resolve with decoded token", function (assert) {
+test.cb("UserCheck - resolve with decoded token", function (assert) {
   check(TOKEN_1).then(function (decodedToken) {
     assert.deepEqual(decodedToken, DECODED_TOKEN_1);
     assert.end();

@@ -1,11 +1,10 @@
-var test = require("tape");
+var test = require("ava");
 var index = require("../index");
 var AuthFetch = require("../lib/AuthFetch");
 
 test("index - exports", function (assert) {
-  assert.ok(index({}) !== null, "Something exported as default");
-  assert.equal(index.AuthFetch, AuthFetch, "exports AuthFetch without invoking function");
-  assert.end();
+  assert.true(index({}) !== null, "Something exported as default");
+  assert.is(index.AuthFetch, AuthFetch, "exports AuthFetch without invoking function");
 });
 
 test("index - Build router with roles in it", function (assert) {
@@ -18,5 +17,4 @@ test("index - Build router with roles in it", function (assert) {
   const tokenauth = index(config);
   const Router = tokenauth.Router(null, "secret", 90, null);
   assert.deepEqual(Router.getRoles(), config.roles, "Has the roles in it");
-  assert.end();
 });

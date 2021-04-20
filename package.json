@@ -4,7 +4,7 @@
   "description": "Simple express.js middleware to use a token for API authentication.",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/tape/bin/tape test/*.js | faucet",
+    "test": "node_modules/ava/cli.js --verbose",
     "lint": "eslint index.js lib/*.js"
   },
   "repository": {
@@ -23,13 +23,12 @@
     "url": "https://github.com/luispablo/tokenauth/issues"
   },
   "homepage": "https://github.com/luispablo/tokenauth#readme",
-  "devDependencies": {
-    "faucet": "0.0.1",
-    "tape": "^4.5.1"
-  },
   "dependencies": {
     "date-fns": "^1.29.0",
     "jwt-simple": "^0.5.6",
     "luispablo-multilog": "^1.3.0"
+  },
+  "devDependencies": {
+    "ava": "^3.15.0"
   }
 }
