@@ -36,7 +36,7 @@ test.serial("HTTPHeaderCheck - accepts valid user token", async function (assert
 
 test.serial("HTTPHeaderCheck - rejects invalid user token", function (assert) {
   req.headers['x-access-token'] = "token";
-  var userCheck = function () { return new Promise(function (resolve) { reject(); }); };
+  var userCheck = function () { return new Promise(function (resolve, reject) { reject(); }); };
   var headerCheck = HTTPHeaderCheck(null, userCheck, mockLog);
 
   headerCheck(req, res);

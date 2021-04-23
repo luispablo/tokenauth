@@ -82,6 +82,66 @@ The POST route that creates a new JWT, returns an object as such:
 
 The **roles** property of the user object contains the computed roles for the user, from its username and groups.
 
+
+## SPECIAL CASE: Google OAuth
+
+If you want to use Google OAuth service, you can set the router up in the following way (using passport & passport-google-oauth20 npm modules):
+
+```javascript
+const passport = require("passport");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const secret = "añkldjfañsdfa718749823u4h12jh4ñ123"; // to encode / decode the token
+const tokenauth = require("tokenauth")({
+  token: {
+    secret,
+    validDays: 90
+  },
+  staticKeys: {
+    "MOBILE_APP": "añlkajsdfkaaa66797987080adaaaeer33",
+    "INTERNAL_APP": "hhklkiokjr878778fdjn3nn3nmn333jkkjlñ"
+  }
+});
+const auth = tokenauth.Middleware;
+const authRouter = tokenauth.Router(null, secret, validDays);
+
+passport.use(new GoogleStrategy({ 
+  clientID: process.env.GOOGLE_CLIENT_ID, 
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET, 
+  callbackURL: process.env.GOOGLE_CALLBACK_URL 
+}, function (accessToken, refreshToken, profile, done) {
+  done(null, profile);
+}));
+passport.serializeUser(function(user, cb) {
+  cb(null, user);
+});
+passport.deserializeUser(function(obj, cb) {
+  cb(null, obj);
+});
+
+app.get("/auth/token/validate", authRouter.validateToken); // Validate if a given JWT exists and is not expired
+app.delete("/auth/token", authRouter.deleteToken); // Removes JWT from local storage
+app.get("/auth/google", passport.authenticate('google', { scope: ['profile', 'email', 'openid'] }));
+app.get("/auth/google/callback", passport.authenticate('google', { failureRedirect: '/login' }), async function (req, res) {
+  const email = req.user.emails[0].value;
+  const [dbUser] = await knex("users").where({ email });
+  const responseItems = [];
+  if (dbUser) { 
+    const { token, exp, user } = authRouter.addToken(email, req.user);
+    responseItems.push(["user.email", email]);
+    responseItems.push(["JWT", token]);
+  } else {
+    responseItems.push(["error", "Inexistent user"]);
+  }
+  res.send(`
+    <html><script>
+      ${responseItems.map(i => `window.localStorage.setItem("${i[0]}", "${i[1]}")`)}
+      window.location.href = "/";
+    </script></html>
+  `);
+});
+
+```
+
 ## Middleware auth data provided
 
 Tokenauth leaves the decoded token info in the request.
@@ -209,10 +269,31 @@ This middleware expects the username in a HTTP header called **x-credentials-use
 We also have a helper for your authenticated HTTP fetching, like so:
 
 ```javascript
-var AuthFetch = require("tokenauth").AuthFetch;
+const { authFetch } = require("tokenauth");
 
-// and say you already have a jwt object
-// then you can do:
+try {
+   // By default it'll try to take the JWT from localStorage: localStorage.get("JWT")
+  const res = await authFetch("api/users");
+
+  // If you have the JWT somewhere else, you can provide one as an option
+  const res = await authFetch("api/users", { jwt: ctx.jwt });
+  
+  if (res.status === 401) {
+    // Your JWT is invalid, get a new one!
+  } else if (res.status === 200) {
+    const data = await res.json();
+  }
+} catch (err) {
+  if (err.message === "NO_JWT") {
+    // No JSON Web Token found in local storage, get one!
+  }
+}
+```
+
+To keep legacy compatibilty, this still works:
+
+```javascript
+var AuthFetch = require("tokenauth").AuthFetch;
 var authFetch = AuthFetch(jwt);
 
 // and then

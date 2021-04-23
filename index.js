@@ -1,5 +1,6 @@
 "use strict";
 
+const authFetch = require("./lib/authFetch");
 var AppCheck = require("./lib/AppCheck");
 var UserCheck = require("./lib/UserCheck");
 var HTTPHeaderCheck = require("./lib/HTTPHeaderCheck");
@@ -21,6 +22,7 @@ var tokenauth = function (config, logger) {
   };
 };
 
+tokenauth.authFetch = authFetch;
 tokenauth.AuthFetch = AuthFetch;
 
 module.exports = tokenauth;
