@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "node_modules/ava/cli.js --verbose",
+    "test-watch": "node_modules/ava/cli.js --verbose --watch",
     "lint": "eslint index.js lib/*.js"
   },
   "repository": {
