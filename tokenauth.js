@@ -2,11 +2,11 @@
 
 const authFetch = require("./lib/authFetch");
 const AppCheck = require("./lib/AppCheck");
-const UserCheck = require("./lib/UserCheck");
-const HTTPHeaderCheck = require("./lib/HTTPHeaderCheck");
-const Router = require("./lib/Router");
-const MultiLog = require("luispablo-multilog");
 const AuthFetch = require("./lib/AuthFetch");
+const HTTPHeaderCheck = require("./lib/HTTPHeaderCheck");
+const MultiLog = require("luispablo-multilog");
+const Router = require("./lib/Router");
+const UserCheck = require("./lib/UserCheck");
 
 const consoleLogger = MultiLog([{name: "console", level: "ERROR"}]);
 
