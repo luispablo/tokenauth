@@ -1,12 +1,12 @@
 {
   "name": "tokenauth",
-  "version": "3.4.0",
+  "version": "3.4.1",
   "description": "Simple express.js middleware to use a token for API authentication.",
-  "main": "index.js",
+  "main": "tokenauth.js",
   "scripts": {
     "test": "node_modules/ava/cli.js --verbose",
     "test-watch": "node_modules/ava/cli.js --verbose --watch",
-    "lint": "eslint index.js lib/*.js"
+    "lint": "eslint tokenauth.js lib/*.js"
   },
   "repository": {
     "type": "git",
