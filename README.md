@@ -43,8 +43,9 @@ tokenauth provides an Express router to create, validate an destroy the JWTs.
 ```javascript
 const logger = ... // this param is optional, but you can use something similar to @luispablo/multilog (https://www.npmjs.com/package/@luispablo/multilog)
 
-const tokenauth = require("tokenauth")(properties, logger);
+const initTokenauth = require("tokenauth");
 
+const tokenauth = initTokenauth(properties, logger);
 const authenticator = ... // an object with an authenticate(user, pass) function, with a thenable response
 const secret = "añkldjfañsdfa718749823u4h12jh4ñ123"; // to encode / decode the token
 const validDays = 7; // how many days you want to keep the tokens valid, no limit
@@ -91,7 +92,9 @@ If you want to use Google OAuth service, you can set the router up in the follow
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const secret = "añkldjfañsdfa718749823u4h12jh4ñ123"; // to encode / decode the token
-const tokenauth = require("tokenauth")({
+const initTokenauth = require("tokenauth");
+
+const tokenauth = initTokenauth({
   token: {
     secret,
     validDays: 90
@@ -293,8 +296,8 @@ try {
 To keep legacy compatibilty, this still works:
 
 ```javascript
-var AuthFetch = require("tokenauth").AuthFetch;
-var authFetch = AuthFetch(jwt);
+const { AuthFetch } = require("tokenauth");
+const authFetch = AuthFetch(jwt);
 
 // and then
 authFetch("api/users").then(res => {
@@ -322,11 +325,11 @@ var properties = {
 then you can use it like this:
 
 ```javascript
-var AuthFetch = require("tokenauth").AuthFetch;
+const { AuthFetch } = require("tokenauth");
 
 // and say you already have a jwt object
 // then you can do:
-var authFetch = AuthFetch({ appId: "MOBILE_APP", token: "añlkajsdfkaaa66797987080adaaaeer33" });
+const authFetch = AuthFetch({ appId: "MOBILE_APP", token: "añlkajsdfkaaa66797987080adaaaeer33" });
 
 // and then
 authFetch("api/users").then(res => {
@@ -341,8 +344,8 @@ If you're submiting a form POST or PUT with multipart content, you must add a
 parameter ```multipart``` set to **true**.
 
 ```javascript
-var AuthFetch = require("tokenauth").AuthFetch;
-var authFetch = AuthFetch(jwt);
+const { AuthFetch } = require("tokenauth");
+const authFetch = AuthFetch(jwt);
 
 authFetch("api/some-post", { multipart: true }).then(res => {
 	// your magic here...
@@ -359,13 +362,15 @@ When you first create **TokenAuth** you can provide it with a logger, so instead
 of doing
 
 ```javascript
-var TokenAuth = require("tokenauth")(properties);
+const initTokenauth = require("tokenauth");
+const tokenauth = initTokenauth(properties);
 ```
 
 you can do
 
 ```javascript
-var TokenAuth = require("tokenauth")(properties, log);
+const initTokenauth = require("tokenauth");
+const tokenauth = initTokenauth(properties, log);
 ```
 
 The **log** object is any object with four methods: info(msg), warn(msg), error(msg),
