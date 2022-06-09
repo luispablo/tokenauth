@@ -269,29 +269,40 @@ This middleware expects the username in a HTTP header called **x-credentials-use
 
 # Fetching authenticated data from client
 
-We also have a helper for your authenticated HTTP fetching, like so:
+We also have a helper for your authenticated HTTP fetching:
 
 ```javascript
 const { authFetch } = require("tokenauth");
 
 try {
    // By default it'll try to take the JWT from localStorage: localStorage.get("JWT")
-  const res = await authFetch("api/users");
+  const res1 = await authFetch("api/users");
 
   // If you have the JWT somewhere else, you can provide one as an option
-  const res = await authFetch("api/users", { jwt: ctx.jwt });
+  const res2 = await authFetch("api/users", { jwt: ctx.jwt });
+
+  // throwHTTPErrorCodes: throws the response as an error if HTTP response code between 400 - 499 (client errors) and 500 - 599
+  //  (by default false)
+  const res3 = await authFetch("api/users", { throwHTTPErrorCodes: true });
   
-  if (res.status === 401) {
-    // Your JWT is invalid, get a new one!
-  } else if (res.status === 200) {
+  if (res.status === 200) {
     const data = await res.json();
+  } else {
+    // handle response
   }
 } catch (err) {
-  if (err.message === "NO_JWT") {
+  if (err.status && err.status === 401) {
+    // Your JWT is invalid, get a new one!
+  } else if (err.message === "NO_JWT") {
     // No JSON Web Token found in local storage, get one!
   }
 }
 ```
+
+## Parameters
+ 
+- `jwt` Manually provided JWT
+- `throwHTTPErrorCodes` (default **false**): throws the response as an error if HTTP response code between 400 - 499 (client errors) and 500 - 599
 
 To keep legacy compatibilty, this still works:
 
