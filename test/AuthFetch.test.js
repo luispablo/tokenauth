@@ -5,7 +5,7 @@ var TOKEN = "TEST_TOKEN";
 var jwtMock = { token: TOKEN };
 var body = { name: "test name", lastname: "test lastname" };
 
-test("AuthFetch - Sets authentication header from JWT", function (assert) {
+test("Sets authentication header from JWT", function (assert) {
   assert.plan(1);
   var fetchMock = function (URL, options) {
     assert.is(options.headers["x-access-token"], TOKEN, "Sets the token in HTTP header");
@@ -14,7 +14,7 @@ test("AuthFetch - Sets authentication header from JWT", function (assert) {
   authFetch("random URL");
 });
 
-test("AuthFetch - Sets authentication header for static app ID + token", function (assert) {
+test("Sets authentication header for static app ID + token", function (assert) {
   var appId = "APP_TEST_ID1";
   var token = "APP_TOKEN1";
   assert.plan(2);
@@ -26,7 +26,7 @@ test("AuthFetch - Sets authentication header for static app ID + token", functio
   authFetch("random URL");
 });
 
-test("AuthFetch - Prevent Content-Type and JSON.stringify with multipart: true", function (assert) {
+test("Prevent Content-Type and JSON.stringify with multipart: true", function (assert) {
   assert.plan(2);
   var fetchMock = function (URL, options) {
     assert.falsy(options.headers["Content-Type"], "This shouldn't be set");
@@ -36,7 +36,7 @@ test("AuthFetch - Prevent Content-Type and JSON.stringify with multipart: true",
   authFetch("/someurl", { body: { id: 1 }, multipart: true });
 });
 
-test("AuthFetch - Accepts JSON and content type JSON", function (assert) {
+test("Accepts JSON and content type JSON", function (assert) {
   assert.plan(2);
   var fetchMock = function (URL, options) {
     assert.is(options.headers["Accept"], "application/json", "HTTP header accepts JSON");
@@ -46,7 +46,7 @@ test("AuthFetch - Accepts JSON and content type JSON", function (assert) {
   authFetch("random URL");
 });
 
-test("AuthFetch - Stringifies the body if it's not", function (assert) {
+test("Stringifies the body if it's not", function (assert) {
   assert.plan(1);
   var fetchMock = function (URL, options) {
     assert.is(options.body, JSON.stringify(body), "The body is stringified");
@@ -55,7 +55,7 @@ test("AuthFetch - Stringifies the body if it's not", function (assert) {
   authFetch("random URL", { method: "PUT", body: body });
 });
 
-test("AuthFetch - Leaves the body as is if it's already stringified", function (assert) {
+test("Leaves the body as is if it's already stringified", function (assert) {
   assert.plan(1);
   var fetchMock = function (URL, options) {
     assert.is(options.body, JSON.stringify(body), "The body is stringified");

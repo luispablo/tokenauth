@@ -4,12 +4,12 @@ const initTokenauth = require("../tokenauth");
 const { AuthFetch } = require("../tokenauth");
 const libAuthFetch = require("../lib/AuthFetch");
 
-test("tokenauth - exports", function (assert) {
+test("Exports", function (assert) {
   assert.true(initTokenauth({}) !== null, "Something exported as default");
   assert.is(AuthFetch, libAuthFetch, "exports AuthFetch without invoking function");
 });
 
-test("tokenauth - Build router with roles in it", function (assert) {
+test("Build router with roles in it", function (assert) {
   const config = {
     roles: {
       "role1": { groups: ["group1", "group2"], users: ["user1"] },

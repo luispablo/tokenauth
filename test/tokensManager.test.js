@@ -19,7 +19,7 @@ test("add / exists / remove", function (t) {
   t.falsy(tokens.exists(token1), "It's removed");
 });
 
-test("keep tokens between sessions", function (t) {
+test("Keep tokens between sessions", function (t) {
   const { addToken, token1, tokens } = t.context;
   tokens.clear();
   const tokens2 = tokensManager();
@@ -33,7 +33,7 @@ test("keep tokens between sessions", function (t) {
   t.false(tokens4.exists(token1));
 });
 
-test("don't store duplicates", function (t) {
+test("Don't store duplicates", function (t) {
   const { token1 } = t.context;
   const tokens = tokensManager();
   tokens.clear()

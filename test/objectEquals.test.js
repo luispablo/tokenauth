@@ -2,18 +2,18 @@
 const objectEquals = require("../lib/objectEquals");
 const test = require("ava");
 
-test("same object", function (t) {
+test("Same object", function (t) {
   const obj = { name: "Tom" };
   t.truthy(objectEquals(obj, obj));
 });
 
-test("equal objects", function (t) {
+test("Equal objects", function (t) {
   const obj1 = { name: "Tom", son: { name: "arthur" } };
   const obj2 = { ...obj1 };
   t.truthy(objectEquals(obj1, obj2));
 });
 
-test("distinct objects", function (t) {
+test("Distinct objects", function (t) {
   const obj1 = { name: "Tom" };
   const obj2 = { ...obj1, age: 30 };
   t.falsy(objectEquals(obj1, obj2));
@@ -27,11 +27,11 @@ test("null & undefined values", function (t) {
   t.false(objectEquals(obj2, undefined));
 });
 
-test("compare strings", function (t) {
+test("Compare strings", function (t) {
   t.truthy(objectEquals("Tom", "Tom"));
 });
 
-test("compare arrays", function (t) {
+test("Compare arrays", function (t) {
   t.truthy(objectEquals([], []));
   t.truthy(objectEquals(["a"], ["a"]));
   t.false(objectEquals(["a"], ["b"]));

@@ -52,7 +52,7 @@ test.beforeEach(function beforeEach (t) {
   t.context = { routes, tokens };
 });
 
-test.serial("Router - Computed roles in token", async function (t) {
+test.serial("Computed roles in token", async function (t) {
   const { tokens } = t.context;
   const auth = {
     authenticate: function () {
@@ -71,7 +71,7 @@ test.serial("Router - Computed roles in token", async function (t) {
   await Router(tokens, roles)(auth, SECRET, VALIDITY_DAYS, mockLog).createToken(defaultReq, resMock);
 });
 
-test.serial("Router - is logging", function (t) {
+test.serial("Is logging", function (t) {
   const { routes } = t.context;
   reqMock.body = {};
   t.plan(1);
@@ -82,7 +82,7 @@ test.serial("Router - is logging", function (t) {
   routes.createToken(reqMock, resMock);
 });
 
-test.serial("Router - Create token", async function (t) {
+test.serial("Create token", async function (t) {
   const { routes } = t.context;
   t.plan(2);
   resMock.json = function (object) {
@@ -92,7 +92,7 @@ test.serial("Router - Create token", async function (t) {
   await routes.createToken(defaultReq, resMock);
 });
 
-test.serial("Router - Unauthorized create token", async function (t) {
+test.serial("Unauthorized create token", async function (t) {
   const { tokens } = t.context;
   t.plan(1);
   reqMock.body = { username: "another_user", password: PASSWORD };
@@ -102,7 +102,7 @@ test.serial("Router - Unauthorized create token", async function (t) {
   Router(tokens, roles)(authenticatorMock, SECRET, VALIDITY_DAYS, mockLog).createToken(reqMock, resMock);
 });
 
-test.serial("Router - Authorized create token", async function (t) {
+test.serial("Authorized create token", async function (t) {
   const { tokens } = t.context;
   t.plan(1);
   reqMock.body = { username: USERNAME, password: PASSWORD };
@@ -111,7 +111,7 @@ test.serial("Router - Authorized create token", async function (t) {
   Router(tokens, roles)(authenticatorMock, SECRET, VALIDITY_DAYS, mockLog).createToken(reqMock, resMock);
 });
 
-test.serial("Router - No username or no password", async function (t) {
+test.serial("No username or no password", async function (t) {
   const { routes } = t.context;
   reqMock.body = {};
   t.plan(1);
@@ -122,7 +122,7 @@ test.serial("Router - No username or no password", async function (t) {
   routes.createToken(reqMock, resMock);
 });
 
-test.serial("Router - Invalid username or password", async function (t) {
+test.serial("Invalid username or password", async function (t) {
   const { routes } = t.context;
   resMock = buildResMock();
   reqMock.body.username = "invalid";
@@ -136,7 +136,7 @@ test.serial("Router - Invalid username or password", async function (t) {
   routes.createToken(reqMock, resMock);
 });
 
-test.serial("Router - Free access when no roles specified", async function (t) {
+test.serial("Free access when no roles specified", async function (t) {
   const { tokens } = t.context;
   reqMock.body.username = USERNAME;
   reqMock.body.password = PASSWORD;
@@ -148,7 +148,7 @@ test.serial("Router - Free access when no roles specified", async function (t) {
   Router(tokens)(authOKEmpty, SECRET, VALIDITY_DAYS, mockLog).createToken(reqMock, res);
 });
 
-test.serial("Router - Default role assigned", async function (t) {
+test.serial("Default role assigned", async function (t) {
   const { tokens } = t.context;
   const roles = { "default-role": { defaultRole: true } };
   t.plan(1);
@@ -156,7 +156,7 @@ test.serial("Router - Default role assigned", async function (t) {
   Router(tokens, roles)(authOKEmpty, SECRET, VALIDITY_DAYS, mockLog).createToken(defaultReq, res);
 });
 
-test.serial("Router - Validate existing & valid token", async function (t) {
+test.serial("Validate existing & valid token", async function (t) {
   const { routes } = t.context;
   reqMock.body = {username: USERNAME, password: PASSWORD};
 
@@ -174,7 +174,7 @@ test.serial("Router - Validate existing & valid token", async function (t) {
   routes.createToken(reqMock, resMock);
 });
 
-test.serial("Router - Validate non-existent token", async function (t) {
+test.serial("Validate non-existent token", async function (t) {
   const { routes } = t.context;
   t.plan(1);
 
@@ -186,7 +186,7 @@ test.serial("Router - Validate non-existent token", async function (t) {
   routes.validateToken(reqMock, resMock);
 });
 
-test.serial("Router - Validate expired token", async function (t) {
+test.serial("Validate expired token", async function (t) {
   const { tokens } = t.context;
   var expiredRoutes = Router(tokens)(authenticatorMock, SECRET, -1, mockLog); // negative days for generating expired tokens
   reqMock.body = {username: USERNAME, password: PASSWORD};
@@ -205,7 +205,7 @@ test.serial("Router - Validate expired token", async function (t) {
   expiredRoutes.createToken(reqMock, resMock);
 });
 
-test.serial("Router - validateCredentials - correct username and password in HTTP header", async function (t) {
+test.serial("validateCredentials - correct username and password in HTTP header", async function (t) {
   const { routes } = t.context;
   t.plan(1);
   const req = {
@@ -215,7 +215,7 @@ test.serial("Router - validateCredentials - correct username and password in HTT
   routes.validateCredentials(req, null, next);
 });
 
-test.serial("Router - validateCredentials - no username or password in HTTP header", async function (t) {
+test.serial("validateCredentials - no username or password in HTTP header", async function (t) {
   const { routes } = t.context;
   t.plan(1);
   const req = { headers: {} };
@@ -228,7 +228,7 @@ test.serial("Router - validateCredentials - no username or password in HTTP head
   routes.validateCredentials(req, res);
 });
 
-test.serial("Router - validateCredentials - incorrect password in HTTP header", async function (t) {
+test.serial("validateCredentials - incorrect password in HTTP header", async function (t) {
   const { routes } = t.context;
   t.plan(1);
   const req = {
@@ -243,7 +243,7 @@ test.serial("Router - validateCredentials - incorrect password in HTTP header", 
   routes.validateCredentials(req, res);
 });
 
-test.serial("Router - delete token", async function (t) {
+test.serial("Delete token", async function (t) {
   const { routes } = t.context;
   reqMock.body.username = USERNAME;
   reqMock.body.password = PASSWORD;

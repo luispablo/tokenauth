@@ -11,19 +11,19 @@ var res = {
 };
 var mockLog = { debug: function (msg) { this.lastMessage = msg; } };
 
-test.serial("HTTPHeaderCheck - is logging", function (assert) {
+test.serial("Is logging", function (assert) {
   var logCheck = HTTPHeaderCheck(null, null, mockLog);
   logCheck(req, res);
   assert.is(mockLog.lastMessage, "No token provided", "No token provided debug message");
 });
 
-test.serial("HTTPHeaderCheck - rejects no token", function (assert) {
+test.serial("Rejects no token", function (assert) {
   var headerCheck = HTTPHeaderCheck(null, null, mockLog);
   headerCheck(req, res);
   assert.is(401, res.code);
 });
 
-test.serial("HTTPHeaderCheck - accepts valid user token", async function (assert) {
+test.serial("Accepts valid user token", async function (assert) {
   assert.plan(1);
 
   req.headers['x-access-token'] = "token";
@@ -34,7 +34,7 @@ test.serial("HTTPHeaderCheck - accepts valid user token", async function (assert
   headerCheck(req, res, next);
 });
 
-test.serial("HTTPHeaderCheck - rejects invalid user token", function (assert) {
+test.serial("Rejects invalid user token", function (assert) {
   req.headers['x-access-token'] = "token";
   var userCheck = function () { return new Promise(function (resolve, reject) { reject(); }); };
   var headerCheck = HTTPHeaderCheck(null, userCheck, mockLog);
@@ -44,7 +44,7 @@ test.serial("HTTPHeaderCheck - rejects invalid user token", function (assert) {
   assert.is(res.code, 401, "Should have failed");
 });
 
-test.serial("HTTPHeaderCheck - accepts valid app id / key", async function (assert) {
+test.serial("Accepts valid app id / key", async function (assert) {
   assert.plan(1);
 
   req.headers['x-access-app-id'] = "id";
@@ -56,7 +56,7 @@ test.serial("HTTPHeaderCheck - accepts valid app id / key", async function (asse
   headerCheck(req, res, next);
 });
 
-test.serial("HTTPHeaderCheck - rejects invalid app id / key", async function (assert) {
+test.serial("Rejects invalid app id / key", async function (assert) {
   req.headers['x-access-app-id'] = "id";
   req.headers['x-access-token'] = "key";
   var error = { status: 401 };
@@ -69,7 +69,7 @@ test.serial("HTTPHeaderCheck - rejects invalid app id / key", async function (as
   await headerCheck(req, res);
 });
 
-test.serial.cb("HTTPHeaderCheck - sets decoded token req", function (assert) {
+test.serial.cb("Sets decoded token req", function (assert) {
   var decodedToken = { iss: "test_username", exp: 1318874398806 };
   req.headers["x-access-app-id"] = null;
 

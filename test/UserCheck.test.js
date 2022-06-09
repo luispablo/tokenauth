@@ -22,14 +22,14 @@ tokens.add(TOKEN_1);
 tokens.add(TOKEN_2);
 const check = UserCheck(tokens, SECRET, mockLog);
 
-test.cb("UserCheck - is logging", function (t) {
+test.cb("Is logging", function (t) {
   check(INVALID_TOKEN).catch(function () {
     t.is(mockLog.lastMessge, "Invalid token", "Logged debug message");
     t.end();
   });
 });
 
-test.serial("UserCheck - invalid token", async function (t) {
+test.serial("Invalid token", async function (t) {
   t.plan(1);
 
   check(INVALID_TOKEN).then(function () {
@@ -39,7 +39,7 @@ test.serial("UserCheck - invalid token", async function (t) {
   });
 });
 
-test.serial("UserCheck - expired token", async function (t) {
+test.serial("Expired token", async function (t) {
   t.plan(1);
 
   const yesterdayInSeconds = subDays(new Date(), 1).getTime() / 1000;
@@ -55,7 +55,7 @@ test.serial("UserCheck - expired token", async function (t) {
   })
 });
 
-test.serial("UserCheck - no valid tokens", async function (t) {
+test.serial("No valid tokens", async function (t) {
   t.plan(1);
   const tokens1 = tokensManager();
   tokens1.clear();
@@ -68,7 +68,7 @@ test.serial("UserCheck - no valid tokens", async function (t) {
   });
 });
 
-test.serial("UserCheck - valid token", async function (t) {
+test.serial("Valid token", async function (t) {
   t.plan(1);
 
   check(TOKEN_1).then(function () {
@@ -78,7 +78,7 @@ test.serial("UserCheck - valid token", async function (t) {
   });
 });
 
-test.cb("UserCheck - resolve with decoded token", function (t) {
+test.cb("Resolve with decoded token", function (t) {
   check(TOKEN_1).then(function (decodedToken) {
     t.deepEqual(decodedToken, DECODED_TOKEN_1);
     t.end();

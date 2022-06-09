@@ -11,14 +11,14 @@ KEYS[APP_1_ID] = APP_1_KEY;
 var mockLog = { debug: function (msg) { this.lastMessage = msg; } };
 var check = AppCheck(KEYS, mockLog);
 
-test.serial.cb("AppCheck - is logging", function (assert) {
+test.serial.cb("Is logging", function (assert) {
   check(UNEXISTENT_ID, APP_1_KEY).catch(function () {
     assert.is(mockLog.lastMessage, UNEXISTENT_ID +" is not a valid application ID.", "Invalid app ID message");
     assert.end();
   });
 });
 
-test.serial("AppCheck - unexistent ID", async function (assert) {
+test.serial("Unexistent ID", async function (assert) {
   assert.plan(1);
   check(UNEXISTENT_ID, APP_1_KEY).then(function () {
     assert.fail("Should have failed");
@@ -27,7 +27,7 @@ test.serial("AppCheck - unexistent ID", async function (assert) {
   })
 });
 
-test.serial("AppCheck - invalid key", async function (assert) {
+test.serial("Invalid key", async function (assert) {
   var INVALID_KEY = "invalid_key";
   assert.plan(1);
   check(APP_1_ID, INVALID_KEY).then(function () {
@@ -37,7 +37,7 @@ test.serial("AppCheck - invalid key", async function (assert) {
   });
 });
 
-test.serial("AppCheck - valid ID / key pair", async function (assert) {
+test.serial("Valid ID / key pair", async function (assert) {
   assert.plan(1);
   check(APP_1_ID, APP_1_KEY).then(function () {
     assert.pass("It works");
