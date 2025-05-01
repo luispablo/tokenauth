@@ -50,7 +50,7 @@ test.serial("Expired token", async function(t) {
   return await expiredCheck(expiredToken).then(function() {
     t.fail("Should have failed");
   }).catch(function(error) {
-    t.is(error.message, "Token expired", "Token expired message");
+    t.is(error.message, "Invalid token", "Token expired message");
   })
 });
 

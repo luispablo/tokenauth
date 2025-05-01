@@ -10,31 +10,30 @@ var SECRET = "secret";
 var VALIDITY_DAYS = 7;
 
 var authenticatorMock = {
-  authenticate: function (username, password) {
-    return new Promise(function (resolve, reject) {
+  authenticate: function(username, password) {
+    return new Promise(function(resolve, reject) {
       if (username === USERNAME && password === PASSWORD) resolve();
-      else reject({code: 401, message: "Invalid username or password"});
+      else reject({ code: 401, message: "Invalid username or password" });
     });
   }
 };
-var mockLog = { debug: function (msg) { this.lastMessage = msg; } };
-var reqMock = {body: {}};
+var mockLog = { debug: function(msg) { this.lastMessage = msg; } };
+var reqMock = { body: {} };
 
 const defaultReq = { body: { username: USERNAME, password: PASSWORD } };
-const authOKEmpty = { authenticate: function () { return new Promise(function (resolve) { resolve({ }); }); } };
+const authOKEmpty = { authenticate: function() { return new Promise(function(resolve) { resolve({}); }); } };
 
-var buildResMock = function () {
+var buildResMock = function() {
   return {
-    status: function (code) { this.statusCode = code; return this; },
-    sendStatus: function (code) { this.status(code); },
-    send: function (message) { this.object = message; },
-    json: function (object) { this.object = object; },
-    end: function () {}
+    status: function(code) { this.statusCode = code; return this; },
+    sendStatus: function(code) { this.status(code); },
+    send: function(message) { this.object = message; },
+    json: function(object) { this.object = object; },
+    end: function() { }
   };
 };
 
 var resMock = buildResMock();
-var validTokens = [];
 
 const roles = {
   "role1": { groups: ["group1", "group2"] },
@@ -46,23 +45,23 @@ const roles = {
 };
 
 
-test.beforeEach(function beforeEach (t) {
+test.beforeEach(function beforeEach(t) {
   const tokens = tokensManager();
   const routes = Router(tokens, roles)(authenticatorMock, SECRET, VALIDITY_DAYS, mockLog);
   t.context = { routes, tokens };
 });
 
-test.serial("Computed roles in token", async function (t) {
+test.serial("Computed roles in token", async function(t) {
   const { tokens } = t.context;
   const auth = {
-    authenticate: function () {
-      return new Promise(function (resolve) { resolve({ groups: ["group3", "group4"] }); });
+    authenticate: function() {
+      return new Promise(function(resolve) { resolve({ groups: ["group3", "group4"] }); });
     }
   };
 
   t.plan(3);
-  
-  resMock.json = function (object) {
+
+  resMock.json = function(object) {
     const user = object.user;
     t.truthy(user.roles, "The roles are there");
     t.is(user.roles.length, 3, "Has 3 roles");
@@ -71,100 +70,100 @@ test.serial("Computed roles in token", async function (t) {
   await Router(tokens, roles)(auth, SECRET, VALIDITY_DAYS, mockLog).createToken(defaultReq, resMock);
 });
 
-test.serial("Is logging", function (t) {
+test.serial("Is logging", function(t) {
   const { routes } = t.context;
   reqMock.body = {};
   t.plan(1);
-  resMock.status = function () {
+  resMock.status = function() {
     t.is(mockLog.lastMessage, "No username or password provided", "HTTP 422 message");
     return this;
   };
   routes.createToken(reqMock, resMock);
 });
 
-test.serial("Create token", async function (t) {
+test.serial("Create token", async function(t) {
   const { routes } = t.context;
   t.plan(2);
-  resMock.json = function (object) {
+  resMock.json = function(object) {
     t.truthy(object.token, "Exists the token property");
     t.is(object.user.username, USERNAME, "Token built for the username provided");
   };
   await routes.createToken(defaultReq, resMock);
 });
 
-test.serial("Unauthorized create token", async function (t) {
+test.serial("Unauthorized create token", async function(t) {
   const { tokens } = t.context;
   t.plan(1);
   reqMock.body = { username: "another_user", password: PASSWORD };
-  authenticatorMock.groups = function () { return new Promise(function (resolve) { resolve(["Group1", "TeamA"]); }); };
-  resMock.json = function () {};
-  resMock.status = function (code) { t.is(code, 401, "HTTP not authenticated"); return this; };
+  authenticatorMock.groups = function() { return new Promise(function(resolve) { resolve(["Group1", "TeamA"]); }); };
+  resMock.json = function() { };
+  resMock.status = function(code) { t.is(code, 401, "HTTP not authenticated"); return this; };
   Router(tokens, roles)(authenticatorMock, SECRET, VALIDITY_DAYS, mockLog).createToken(reqMock, resMock);
 });
 
-test.serial("Authorized create token", async function (t) {
+test.serial("Authorized create token", async function(t) {
   const { tokens } = t.context;
   t.plan(1);
   reqMock.body = { username: USERNAME, password: PASSWORD };
-  authenticatorMock.groups = function () { return new Promise(function (resolve) { resolve(["group1", "TeamA"]); }); };
-  resMock.json = function (object) { t.truthy(object.token, "Exists the token property"); };
+  authenticatorMock.groups = function() { return new Promise(function(resolve) { resolve(["group1", "TeamA"]); }); };
+  resMock.json = function(object) { t.truthy(object.token, "Exists the token property"); };
   Router(tokens, roles)(authenticatorMock, SECRET, VALIDITY_DAYS, mockLog).createToken(reqMock, resMock);
 });
 
-test.serial("No username or no password", async function (t) {
+test.serial("No username or no password", async function(t) {
   const { routes } = t.context;
   reqMock.body = {};
   t.plan(1);
-  resMock.status = function (code) {
+  resMock.status = function(code) {
     t.is(code, 422, "HTTP error 422 because of missing credentials");
     return this;
   };
   routes.createToken(reqMock, resMock);
 });
 
-test.serial("Invalid username or password", async function (t) {
+test.serial("Invalid username or password", async function(t) {
   const { routes } = t.context;
   resMock = buildResMock();
   reqMock.body.username = "invalid";
   reqMock.body.password = "invalid";
 
   t.plan(1);
-  resMock.status = function (code) {
+  resMock.status = function(code) {
     t.is(code, 401, "HTTP error 401: unauthorized");
     return this;
   };
   routes.createToken(reqMock, resMock);
 });
 
-test.serial("Free access when no roles specified", async function (t) {
+test.serial("Free access when no roles specified", async function(t) {
   const { tokens } = t.context;
   reqMock.body.username = USERNAME;
   reqMock.body.password = PASSWORD;
   t.plan(1);
-  const res = { 
-    status (status) { t.is(200, status, "If called, should be 200"); }, 
-    json () { t.truthy("Everything is fine here"); } 
+  const res = {
+    status(status) { t.is(200, status, "If called, should be 200"); },
+    json() { t.truthy("Everything is fine here"); }
   };
   Router(tokens)(authOKEmpty, SECRET, VALIDITY_DAYS, mockLog).createToken(reqMock, res);
 });
 
-test.serial("Default role assigned", async function (t) {
+test.serial("Default role assigned", async function(t) {
   const { tokens } = t.context;
   const roles = { "default-role": { defaultRole: true } };
   t.plan(1);
-  const res = { json (token) { t.deepEqual(token.user.roles, ["default-role"], "Default role assigned"); }};
+  const res = { json(token) { t.deepEqual(token.user.roles, ["default-role"], "Default role assigned"); } };
   Router(tokens, roles)(authOKEmpty, SECRET, VALIDITY_DAYS, mockLog).createToken(defaultReq, res);
 });
 
-test.serial("Validate existing & valid token", async function (t) {
+test.serial("Validate existing & valid token", async function(t) {
   const { routes } = t.context;
-  reqMock.body = {username: USERNAME, password: PASSWORD};
+  reqMock.body = { username: USERNAME, password: PASSWORD };
 
   t.plan(1);
 
-  resMock.json = function (token) {
-    reqMock.headers = {"x-access-token": token.token};
-    resMock.status = function (code) {
+  resMock.json = function(token) {
+    reqMock.headers = { "x-access-token": token.token };
+    resMock.status = function(code) {
       t.is(code, 200, "HTTP OK");
       return this;
     };
@@ -174,28 +173,28 @@ test.serial("Validate existing & valid token", async function (t) {
   routes.createToken(reqMock, resMock);
 });
 
-test.serial("Validate non-existent token", async function (t) {
+test.serial("Validate non-existent token", async function(t) {
   const { routes } = t.context;
   t.plan(1);
 
-  reqMock.headers = {"x-access-token": "nonexistent"};
-  resMock.status = function (code) {
+  reqMock.headers = { "x-access-token": "nonexistent" };
+  resMock.status = function(code) {
     t.is(code, 401, "HTTP unauthorized");
     return this;
   };
   routes.validateToken(reqMock, resMock);
 });
 
-test.serial("Validate expired token", async function (t) {
+test.serial("Validate expired token", async function(t) {
   const { tokens } = t.context;
   var expiredRoutes = Router(tokens)(authenticatorMock, SECRET, -1, mockLog); // negative days for generating expired tokens
-  reqMock.body = {username: USERNAME, password: PASSWORD};
+  reqMock.body = { username: USERNAME, password: PASSWORD };
 
   t.plan(1);
 
-  resMock.json = function (token) {
-    reqMock.headers = {"x-access-token": token.token};
-    resMock.status = function (code) {
+  resMock.json = function(token) {
+    reqMock.headers = { "x-access-token": token.token };
+    resMock.status = function(code) {
       t.is(code, 401, "HTTP unauthorized, expired");
       return this;
     };
@@ -205,45 +204,45 @@ test.serial("Validate expired token", async function (t) {
   expiredRoutes.createToken(reqMock, resMock);
 });
 
-test.serial("validateCredentials - correct username and password in HTTP header", async function (t) {
+test.serial("validateCredentials - correct username and password in HTTP header", async function(t) {
   const { routes } = t.context;
   t.plan(1);
   const req = {
     headers: { "x-credentials-username": USERNAME, "x-credentials-password": PASSWORD }
   };
-  const next = function () { t.pass("Next invoked"); };
+  const next = function() { t.pass("Next invoked"); };
   routes.validateCredentials(req, null, next);
 });
 
-test.serial("validateCredentials - no username or password in HTTP header", async function (t) {
+test.serial("validateCredentials - no username or password in HTTP header", async function(t) {
   const { routes } = t.context;
   t.plan(1);
   const req = { headers: {} };
   const res = {
-    status (code) {
+    status(code) {
       t.is(code, 422, "The request is invalid");
-      return { end () {} };
+      return { end() { } };
     }
   };
   routes.validateCredentials(req, res);
 });
 
-test.serial("validateCredentials - incorrect password in HTTP header", async function (t) {
+test.serial("validateCredentials - incorrect password in HTTP header", async function(t) {
   const { routes } = t.context;
   t.plan(1);
   const req = {
     headers: { "x-credentials-username": "wronguser", "x-credentials-password": "wrongpass" }
   };
   const res = {
-    status (code) {
+    status(code) {
       t.is(code, 401, "HTTP Unauthorized");
-      return { end () {} };
+      return { end() { } };
     }
   };
   routes.validateCredentials(req, res);
 });
 
-test.serial("Delete token", async function (t) {
+test.serial("Delete token", async function(t) {
   const { routes } = t.context;
   reqMock.body.username = USERNAME;
   reqMock.body.password = PASSWORD;
@@ -252,10 +251,10 @@ test.serial("Delete token", async function (t) {
 
   t.plan(1);
 
-  deleteResMock.json = function (token) {
-    reqMock.headers = {"x-access-token": token};
-    deleteResMock.end = function () {
-      deleteResMock.status = function (code) {
+  deleteResMock.json = function(token) {
+    reqMock.headers = { "x-access-token": token };
+    deleteResMock.end = function() {
+      deleteResMock.status = function(code) {
         t.is(code, 401, "No longer valid");
         return this;
       };
